@@ -15,7 +15,8 @@
 
 	@health path /healthz
 	handle @health {
-		respond "ok" 200
+		rewrite * /readyz
+		reverse_proxy 127.0.0.1:8000
 	}
 
 	handle /auth/* {

@@ -1,11 +1,11 @@
 # ruff: noqa: RUF001 -- Russian schema guidance intentionally names Latin JSON fields.
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Annotated, Any, Literal, TypedDict
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator, with_config
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, with_config
 
 Identifier = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{2,127}$")]
 SectionIdentifier = Annotated[
@@ -23,6 +23,16 @@ SyntheticHttpsUrl = Annotated[
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    @field_validator("*", mode="after", check_fields=False)
+    @classmethod
+    def datetimes_use_explicit_utc(cls, value: Any) -> Any:
+        """Keep API timestamps unambiguous when SQLite returns naive UTC values."""
+        if not isinstance(value, datetime):
+            return value
+        if value.tzinfo is None:
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
 
 
 @with_config(ConfigDict(extra="forbid", str_strip_whitespace=True))

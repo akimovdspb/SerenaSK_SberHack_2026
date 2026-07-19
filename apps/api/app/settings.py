@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     MVP_REPORT_DIR: Path = Path("/srv/app/reports/basket03-mvp-testing")
     SYNTHETIC_DATA_DIR: Path = Path("/srv/app/data/synthetic")
     CONTRACT_LOCK_PATH: Path = Path("/contract-lock/communication_factory.lock.json")
+    RUNTIME_READY_PATH: Path | None = None
     SKILL_PATH: Path = Path("/skills/communication_factory/SKILL.md")
     OUROBOROS_BASE_URL: str = "http://ouroboros:8765"
     LIVE_PROVIDER_PROFILE: str = CANONICAL_PROFILE_NAME

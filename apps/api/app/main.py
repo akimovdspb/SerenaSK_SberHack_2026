@@ -91,6 +91,15 @@ def create_app(
     async def healthz() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.get("/readyz", include_in_schema=False)
+    async def readyz() -> JSONResponse:
+        ready = effective.RUNTIME_READY_PATH is None or effective.RUNTIME_READY_PATH.is_file()
+        return JSONResponse(
+            status_code=200 if ready else 503,
+            content={"status": "ready" if ready else "starting"},
+            headers={"Cache-Control": "no-store"},
+        )
+
     @app.get("/api/v1/health")
     async def health() -> dict[str, Any]:
         return {

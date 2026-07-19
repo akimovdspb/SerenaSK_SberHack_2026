@@ -31,6 +31,9 @@ CONTRACT_GID = 10004
 RAILWAY_PROVIDER_PROFILE = provider_profile(CAMPAIGN_AUTHORING_PROFILE_NAME)
 MODEL = RAILWAY_PROVIDER_PROFILE.runtime_route
 RUNTIME_COMMIT = "a00d51dd414f794d830cacf7da760061e442fa88"
+BOOTSTRAP_MAX_ATTEMPTS = 3
+BOOTSTRAP_RETRY_DELAY_SECONDS = 5.0
+SKILL_REVIEW_MAX_ATTEMPTS = 2
 SECRET_ENV_NAMES = {
     "OPENAI_API_KEY",
     "OPENROUTER_API_KEY",
@@ -154,6 +157,16 @@ def _prepare_directories(state_root: pathlib.Path) -> None:
         path.mkdir(mode=0o700)
         os.chown(path, RUNTIME_UID, RUNTIME_GID)
 
+    ready_marker = _runtime_ready_marker(state_root)
+    try:
+        ready_marker.unlink(missing_ok=True)
+    except IsADirectoryError as exc:
+        raise RailwayStartupError("runtime readiness marker path is not a file") from exc
+
+
+def _runtime_ready_marker(state_root: pathlib.Path) -> pathlib.Path:
+    return state_root / "contracts" / "railway.ready.json"
+
 
 def build_launch_plan(source: dict[str, str] | None = None) -> LaunchPlan:
     environment = dict(source or os.environ)
@@ -202,6 +215,7 @@ def build_launch_plan(source: dict[str, str] | None = None) -> LaunchPlan:
         "MVP_REPORT_DIR": "/srv/app/reports/basket03-mvp-testing",
         "SYNTHETIC_DATA_DIR": "/srv/app/data/synthetic",
         "CONTRACT_LOCK_PATH": str(state_root / "contracts" / "communication_factory.lock.json"),
+        "RUNTIME_READY_PATH": str(_runtime_ready_marker(state_root)),
         "SKILL_PATH": "/skills/communication_factory/SKILL.md",
         "OUROBOROS_BASE_URL": "http://127.0.0.1:8765",
         "RUNTIME_CONTRACT_IDENTITY_KIND": "railway_deployment",
@@ -473,6 +487,55 @@ def _atomic_marker(path: pathlib.Path, payload: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
+def _begin_skill_review_attempt(
+    marker_path: pathlib.Path,
+    identity: dict[str, Any],
+) -> dict[str, Any]:
+    attempt_number = 1
+    if marker_path.exists():
+        try:
+            previous = json.loads(marker_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RailwayStartupError("bootstrap review marker is invalid") from exc
+        if not isinstance(previous, dict):
+            raise RailwayStartupError("bootstrap review marker is invalid")
+        same_identity = all(previous.get(key) == value for key, value in identity.items())
+        if same_identity:
+            status = previous.get("status")
+            if status not in {"started", "failed", "passed"}:
+                raise RailwayStartupError("bootstrap review marker status is invalid")
+            raw_attempt_number = previous.get("attempt_number", 1)
+            if not isinstance(raw_attempt_number, int) or raw_attempt_number < 1:
+                raise RailwayStartupError("bootstrap review marker attempt is invalid")
+            if raw_attempt_number >= SKILL_REVIEW_MAX_ATTEMPTS:
+                raise RailwayStartupError(
+                    "automatic skill review exhausted its bounded retry allowance"
+                )
+            attempt_number = raw_attempt_number + 1
+    attempt = {
+        **identity,
+        "attempt_number": attempt_number,
+        "status": "started",
+        "started_at": datetime.now(UTC).isoformat(),
+    }
+    _atomic_marker(marker_path, attempt)
+    return attempt
+
+
+def _mark_runtime_ready(plan: LaunchPlan) -> None:
+    marker_path = _runtime_ready_marker(plan.state_root)
+    _atomic_marker(
+        marker_path,
+        {
+            "schema_version": 1,
+            "runtime_identity": plan.runtime_identity,
+            "ready_at": datetime.now(UTC).isoformat(),
+        },
+    )
+    os.chown(marker_path, RUNTIME_UID, CONTRACT_GID)
+    os.chmod(marker_path, 0o640)
+
+
 def _skill_state() -> dict[str, Any]:
     manifest = _get_json("http://127.0.0.1:8765/api/extensions/communication_factory/manifest")
     extensions = _get_json("http://127.0.0.1:8765/api/extensions")
@@ -520,26 +583,14 @@ def _bootstrap(plan: LaunchPlan) -> None:
         if plan.runtime_env["AUTO_BOOTSTRAP_SKILL_REVIEW"] != "true":
             raise RailwayStartupError("skill review is required but automatic review is disabled")
         marker_path = plan.state_root / "ouroboros" / "bootstrap-review.json"
-        attempt = {
+        review_identity = {
             "schema_version": 1,
             "content_hash": skill["content_hash"],
             "model": MODEL,
+            "deployment_identity": plan.runtime_identity,
             "retry_id": plan.runtime_env["AUTO_BOOTSTRAP_REVIEW_RETRY_ID"],
         }
-        if marker_path.exists():
-            try:
-                previous = json.loads(marker_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as exc:
-                raise RailwayStartupError("bootstrap review marker is invalid") from exc
-            same_attempt = all(previous.get(key) == value for key, value in attempt.items())
-            if same_attempt and previous.get("status") in {"started", "failed"}:
-                raise RailwayStartupError(
-                    "previous skill review failed; set a new AUTO_BOOTSTRAP_REVIEW_RETRY_ID"
-                )
-        _atomic_marker(
-            marker_path,
-            {**attempt, "status": "started", "started_at": datetime.now(UTC).isoformat()},
-        )
+        attempt = _begin_skill_review_attempt(marker_path, review_identity)
         try:
             _run_checked(
                 "one-time skill review",
@@ -591,7 +642,33 @@ def _bootstrap(plan: LaunchPlan) -> None:
         timeout=45,
         preexec_fn=_drop_to(APP_UID, APP_GID, (CONTRACT_GID,)),
     )
-    print("railway-bootstrap: READY provider=openrouter model=z-ai/glm-5.2")
+
+
+def _bootstrap_with_retries(
+    plan: LaunchPlan,
+    *,
+    max_attempts: int = BOOTSTRAP_MAX_ATTEMPTS,
+    retry_delay_seconds: float = BOOTSTRAP_RETRY_DELAY_SECONDS,
+) -> None:
+    if max_attempts < 1:
+        raise RailwayStartupError("bootstrap retry count must be positive")
+    for attempt_number in range(1, max_attempts + 1):
+        try:
+            _bootstrap(plan)
+        except RailwayStartupError as exc:
+            print(
+                f"railway-bootstrap: attempt={attempt_number}/{max_attempts} failed: {exc}",
+                file=sys.stderr,
+            )
+            if attempt_number == max_attempts:
+                raise RailwayStartupError(
+                    f"bootstrap failed after {max_attempts} bounded attempts"
+                ) from exc
+            time.sleep(retry_delay_seconds)
+        else:
+            _mark_runtime_ready(plan)
+            print("railway-bootstrap: READY provider=openrouter model=z-ai/glm-5.2")
+            return
 
 
 def _stop_processes(processes: dict[str, subprocess.Popen[bytes]]) -> None:
@@ -621,6 +698,7 @@ def main() -> int:
         return 78
 
     stop_requested = threading.Event()
+    bootstrap_failed = threading.Event()
 
     def request_stop(_: int, __: Any) -> None:
         stop_requested.set()
@@ -630,14 +708,24 @@ def main() -> int:
 
     def bootstrap_target() -> None:
         try:
-            _bootstrap(plan)
+            _bootstrap_with_retries(plan)
         except RailwayStartupError as exc:
             print(f"railway-bootstrap: BLOCKED {exc}", file=sys.stderr)
+            bootstrap_failed.set()
+        except Exception as exc:
+            print(
+                f"railway-bootstrap: BLOCKED unexpected failure type={type(exc).__name__}",
+                file=sys.stderr,
+            )
+            bootstrap_failed.set()
 
     threading.Thread(target=bootstrap_target, name="cf-bootstrap", daemon=True).start()
     exit_code = 0
     try:
         while not stop_requested.wait(0.5):
+            if bootstrap_failed.is_set():
+                exit_code = 1
+                break
             exited = next(
                 (
                     (name, process)

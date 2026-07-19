@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
@@ -9,6 +11,7 @@ from apps.api.app.domain.models import (
     ClaimEvidence,
     CommunicationBundle,
     DraftSaveRequest,
+    DraftSaveResult,
     EmailArtifact,
     EmailSection,
     NormalizedValue,
@@ -18,6 +21,21 @@ from apps.api.app.domain.models import (
 from tests.factories import communication_bundle_envelope
 
 CONTEXT_VERSION = "a" * 64
+
+
+def test_api_models_serialize_naive_database_datetimes_as_explicit_utc() -> None:
+    saved_at = datetime(2026, 7, 19, 12, 19, 0)
+    result = DraftSaveResult(
+        status="saved",
+        persisted=True,
+        campaign_id="cmp_timezone_probe",
+        operation="initial",
+        iteration=1,
+        saved_at=saved_at,
+    )
+
+    assert result.saved_at == saved_at.replace(tzinfo=UTC)
+    assert result.model_dump(mode="json")["saved_at"] == "2026-07-19T12:19:00Z"
 
 
 def test_initial_envelope_accepts_explicit_sms_and_email() -> None:

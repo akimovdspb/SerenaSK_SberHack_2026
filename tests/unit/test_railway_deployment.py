@@ -3,7 +3,10 @@ from __future__ import annotations
 import pathlib
 
 import pytest
+from fastapi.testclient import TestClient
 
+from apps.api.app.main import create_app
+from apps.api.app.settings import Settings
 from railway import start
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -64,6 +67,7 @@ def test_launch_plan_keeps_provider_and_password_out_of_app_and_gateway(
     assert "APP_ACCESS_PASSWORD" not in plan.auth_env
     assert "OPENROUTER_API_KEY" not in plan.auth_env
     assert plan.app_env["DEFAULT_EXECUTION_MODE"] == "live_ouroboros"
+    assert plan.app_env["RUNTIME_READY_PATH"].endswith("railway.ready.json")
     assert plan.app_env["LIVE_PROVIDER_PROFILE"] == "openrouter-glm-5.2-campaign-authoring"
     assert plan.app_env["LIVE_TASK_TIMEOUT_SECONDS"] == "600"
     assert plan.app_env["LIVE_RUN_TERMINAL_DEADLINE_SECONDS"] == "900"
@@ -120,6 +124,9 @@ def test_railway_profile_is_one_service_with_public_health_and_private_core() ->
     assert 'builder = "DOCKERFILE"' in config
     assert 'dockerfilePath = "Dockerfile"' in config
     assert 'healthcheckPath = "/healthz"' in config
+    assert "healthcheckTimeout = 1200" in config
+    assert "rewrite * /readyz" in caddyfile
+    assert 'respond "ok" 200' not in caddyfile
     assert "openrouter::z-ai/glm-5.2" in dockerfile
     assert "openrouter-glm-5.2-campaign-authoring" in dockerfile
     assert "a00d51dd414f794d830cacf7da760061e442fa88" in dockerfile
@@ -131,3 +138,104 @@ def test_railway_profile_is_one_service_with_public_health_and_private_core() ->
     assert "reverse_proxy 127.0.0.1:8000" in caddyfile
     assert "reverse_proxy 127.0.0.1:8765" not in caddyfile
     assert "COPY railway/auth.py" in dockerfile
+
+
+def _launch_plan_for_bootstrap(tmp_path: pathlib.Path) -> start.LaunchPlan:
+    return start.LaunchPlan(
+        app_env={},
+        auth_env={},
+        gateway_env={},
+        runtime_env={},
+        state_root=tmp_path,
+        runtime_identity=f"sha256:{'a' * 64}",
+    )
+
+
+def test_bootstrap_retries_transient_failures_and_marks_ready(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plan = _launch_plan_for_bootstrap(tmp_path)
+    attempts: list[int] = []
+    marked_ready: list[start.LaunchPlan] = []
+
+    def bootstrap(_: start.LaunchPlan) -> None:
+        attempts.append(len(attempts) + 1)
+        if len(attempts) < 3:
+            raise start.RailwayStartupError("synthetic transient failure")
+
+    monkeypatch.setattr(start, "_bootstrap", bootstrap)
+    monkeypatch.setattr(start, "_mark_runtime_ready", marked_ready.append)
+    monkeypatch.setattr(start.time, "sleep", lambda _: None)
+
+    start._bootstrap_with_retries(plan)
+
+    assert attempts == [1, 2, 3]
+    assert marked_ready == [plan]
+
+
+def test_bootstrap_retry_count_is_bounded(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plan = _launch_plan_for_bootstrap(tmp_path)
+    attempts: list[int] = []
+
+    def bootstrap(_: start.LaunchPlan) -> None:
+        attempts.append(len(attempts) + 1)
+        raise start.RailwayStartupError("synthetic persistent failure")
+
+    monkeypatch.setattr(start, "_bootstrap", bootstrap)
+    monkeypatch.setattr(start.time, "sleep", lambda _: None)
+
+    with pytest.raises(start.RailwayStartupError, match="after 3 bounded attempts"):
+        start._bootstrap_with_retries(plan)
+
+    assert attempts == [1, 2, 3]
+
+
+def test_skill_review_allows_one_automatic_retry_then_stops(tmp_path: pathlib.Path) -> None:
+    marker = tmp_path / "bootstrap-review.json"
+    identity = {
+        "schema_version": 1,
+        "content_hash": "content-hash",
+        "model": start.MODEL,
+        "retry_id": "initial",
+    }
+
+    first = start._begin_skill_review_attempt(marker, identity)
+    assert first["attempt_number"] == 1
+    start._atomic_marker(marker, {**first, "status": "failed"})
+
+    second = start._begin_skill_review_attempt(marker, identity)
+    assert second["attempt_number"] == 2
+    start._atomic_marker(marker, {**second, "status": "failed"})
+
+    with pytest.raises(start.RailwayStartupError, match="exhausted"):
+        start._begin_skill_review_attempt(marker, identity)
+
+
+def test_railway_readiness_stays_closed_until_bootstrap_marker_exists(
+    tmp_path: pathlib.Path,
+) -> None:
+    ready_marker = tmp_path / "railway.ready.json"
+    settings = Settings(
+        APP_ENV="test",
+        DATABASE_URL=f"sqlite:///{tmp_path / 'factory.db'}",
+        ARTIFACTS_DIR=tmp_path / "artifacts",
+        EVIDENCE_DIR=tmp_path / "evidence",
+        SYNTHETIC_DATA_DIR=ROOT / "data" / "synthetic",
+        RUNTIME_READY_PATH=ready_marker,
+        MCP_SHARED_TOKEN="synthetic-mcp-token-that-is-at-least-32-chars",
+    )
+
+    with TestClient(create_app(settings)) as client:
+        starting = client.get("/readyz")
+        assert starting.status_code == 503
+        assert starting.json() == {"status": "starting"}
+
+        ready_marker.write_text("{}\n", encoding="utf-8")
+        ready = client.get("/readyz")
+        assert ready.status_code == 200
+        assert ready.json() == {"status": "ready"}
+        assert client.get("/healthz").status_code == 200
