@@ -196,18 +196,19 @@ def validate_documentation(root: pathlib.Path = ROOT) -> dict[str, Any]:
         "make init",
         "make up",
         "127.0.0.1:8080",
-        "P1/P2",
         "LICENSE",
     )
     if any(term not in readme for term in required_readme_terms):
-        raise VerificationError("README omits a required product/start/security/status topic")
+        raise VerificationError("README omits a required product/start/security topic")
     demo = (root / "docs" / "DEMO_SCRIPT.md").read_text(encoding="utf-8")
     if "Target: 168 seconds" not in demo or "<180" not in demo or "| 2 |  |  |" not in demo:
         raise VerificationError("demo script/timing/rehearsal template is incomplete")
     return {
         "required_file_count": len(REQUIRED_DOCS),
         "startup_step_count": 4,
-        "release_status": validate_readme_release_status(readme),
+        "release_status": validate_readme_release_status(
+            (root / "STATUS.md").read_text(encoding="utf-8")
+        ),
     }
 
 

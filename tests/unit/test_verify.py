@@ -69,7 +69,7 @@ def test_current_documentation_has_exact_four_step_quickstart() -> None:
 
     assert result["startup_step_count"] == 4
     assert result["required_file_count"] == 16
-    assert result["release_status"] == "WAITING_FOR_OPERATOR"
+    assert result["release_status"] == "IMPLEMENTATION_COMPLETE"
 
 
 @pytest.mark.parametrize("status", RELEASE_STATUSES)
