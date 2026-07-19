@@ -96,7 +96,7 @@ provider ledger: generation ID опрашивается не более 600 се
 | --- | --- |
 | `make live-probe` — транспортный probe двух инструментов | `ALLOW_LIVE_PROBE=true`, новый `EVALUATION_ID`, лимиты |
 | `make gate2-live-pilot` — один разрешённый профилем pilot | `ALLOW_GATE2_LIVE=true`, `PILOT_CASE_ID`, лимиты |
-| `make live-readiness` — связать warmup/smoke/пилоты в readiness-манифест | ID прогонов + `READINESS_OUTPUTS_REVIEWED_BY_CODEX=true` (сам provider не вызывает) |
+| `make live-readiness` — связать warmup/smoke/пилоты в readiness-манифест | ID прогонов + отметка о фактическом просмотре результатов (сам provider не вызывает) |
 | `make eval-live` — полная последовательная корзина B01–B15 | `ALLOW_LIVE_EVAL=true`, новый `EVALUATION_ID`, `EVAL_PROVIDER_PROFILE`, `EVAL_MAX_TOKENS`, `EVAL_MAX_COST_USD`, `EVAL_CONCURRENCY=1`, пустой каталог назначения |
 | `make demo-canary` — один capped B04-канарейка перед демо | `ALLOW_DEMO_CANARY=true`, новый `DEMO_CANARY_ID` |
 | `make clean-clone-rehearsal` — README-репетиция на чистом checkout + один live B04 | `ALLOW_CLEAN_CLONE_LIVE=true`, новый `CLEAN_CLONE_EVALUATION_ID`, лимиты |

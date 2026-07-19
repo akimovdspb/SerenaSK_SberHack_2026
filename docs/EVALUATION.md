@@ -74,7 +74,7 @@ Runner отклоняет повторные ID, непустые каталог
 классифицирует физический запрос, продолжает независимые кейсы и учитывает bounded estimate вне
 provider ledger. `verify*`-команды не могут запустить платный прогон.
 
-Для owner-authorized GLM resume текущий handoff дополнительно задаёт hash-bound session lineage.
+Для owner-authorized GLM resume текущий guarded continuation profile дополнительно задаёт hash-bound session lineage.
 Parent attempts входят в совокупный и фазовый расход, но их failed, полностью учтённый и
 checksum-recovered model drift не является вечным запретом новой session. Исключение применяется
 только к failed evidence и позволяет направленное исправление: новая attempt всё равно обязана

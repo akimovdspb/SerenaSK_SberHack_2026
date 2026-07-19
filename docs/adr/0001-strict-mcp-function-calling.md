@@ -3,9 +3,9 @@
 - Status: Accepted and implemented — deterministic requalification green; live requalification pending
 - Decision ID: `CF-RP-001`
 - Date: 2026-07-11
-- Approved: 2026-07-12 by the owner in the active session
+- Status: accepted for the release baseline
 - Runtime baseline: Ouroboros `v6.61.4` / `a00d51dd414f794d830cacf7da760061e442fa88`
-- Application route: OpenAI `gpt-5.4-mini`
+- Application route: explicitly selected provider profile inside Ouroboros
 
 ## Context
 
