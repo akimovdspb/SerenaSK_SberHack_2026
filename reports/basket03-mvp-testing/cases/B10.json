@@ -1,0 +1,174 @@
+{
+  "case_id": "B10",
+  "execution": {
+    "actual_channels": {
+      "email": "SUPPRESSED",
+      "sms": "GENERATED"
+    },
+    "actual_initial": "READY",
+    "actual_terminal": "APPROVABLE",
+    "expected_channels": {
+      "email": "SUPPRESSED",
+      "sms": "GENERATED"
+    },
+    "expected_initial": "READY",
+    "expected_terminal": "APPROVABLE",
+    "package_version": 1,
+    "reason_code": null,
+    "run_status": "COMPLETED"
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Посмотреть детали",
+      "cta_url": "https://flow.example.test/term-14",
+      "name": "Короткое SMS",
+      "notes": "Не обходить запрет e-mail; SMS разрешён.",
+      "objective": "Показать разрешённое grounded SMS без e-mail",
+      "offer_period": null,
+      "product_id": "synthetic_term_plan",
+      "segment_id": "segment_sms_only",
+      "synthetic": true,
+      "tone": "краткий деловой",
+      "trigger_id": "trigger_sms_update"
+    },
+    "expected": {
+      "blocker_codes": [],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [
+        "fact_term_14_days",
+        "fact_term_cta"
+      ],
+      "status": "READY"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 66055,
+    "completion_tokens": 5142,
+    "cost_usd": 0.03767613,
+    "full_worker_occupancy_ms": 123569,
+    "prompt_tokens": 80506,
+    "provider_calls": 5,
+    "total_tokens": 85648,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 123485,
+    "workflow_elapsed_ms": 126741
+  },
+  "mode": "live_ouroboros",
+  "outputs": {
+    "channel_suppressions": [
+      {
+        "channel": "email",
+        "reason": "Отсутствует согласие пользователя на получение e-mail-сообщений.",
+        "reason_code": "CHANNEL_CONSENT_BLOCKED"
+      }
+    ],
+    "email": null,
+    "sms": {
+      "cta_url": "https://flow.example.test/term-14",
+      "fact_refs": [
+        "fact_term_14_days",
+        "fact_term_cta"
+      ],
+      "personalization_refs": [],
+      "text": "План Срок 14. Срок подключения составляет 14 дней. Посмотреть детали: https://flow.example.test/term-14"
+    },
+    "summary": "Синтетический пакет без отправки.",
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": true,
+    "assertions": {
+      "email_consent_suppression": true,
+      "grounded_sms": true
+    },
+    "checked_fact_ids": [
+      "fact_term_14_days",
+      "fact_term_cta"
+    ],
+    "checked_ids": [
+      "QA01",
+      "QA02",
+      "QA03",
+      "QA04",
+      "QA05",
+      "QA06",
+      "QA07",
+      "QA08",
+      "QA09",
+      "QA10",
+      "QA11",
+      "QA12",
+      "QA13",
+      "QA14",
+      "QA15",
+      "QA16",
+      "QA17",
+      "QA18",
+      "QA19",
+      "QA20",
+      "QA21",
+      "QA22"
+    ],
+    "checked_policy_ids": [
+      "contact_standard_v1",
+      "legal_base_v1"
+    ],
+    "claim_evidence": [
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_sms_duration_001",
+        "claim_type": "duration",
+        "fact_id": "fact_term_14_days",
+        "normalized_value": {
+          "unit": "day",
+          "value": 14
+        },
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Срок подключения составляет 14 дней."
+      },
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_sms_url_text_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Посмотреть детали: https://flow.example.test/term-14"
+      },
+      {
+        "artifact_path": "/sms/cta_url",
+        "channel": "sms",
+        "claim_id": "claim_sms_url_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "https://flow.example.test/term-14"
+      }
+    ],
+    "deterministic_score": 100,
+    "findings": [],
+    "sms_metrics": {
+      "characters": 103,
+      "code_units": 103,
+      "encoding": "UCS-2",
+      "segments": 2,
+      "septets": null,
+      "units_per_segment": 67
+    },
+    "validation_blockers": [],
+    "validation_questions": [],
+    "validation_status": "READY"
+  },
+  "synthetic": true,
+  "title": "E-mail запрещён, SMS разрешён consent policy"
+}

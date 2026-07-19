@@ -1,0 +1,91 @@
+{
+  "case_id": "B11",
+  "execution": {
+    "actual_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "actual_initial": "BLOCKED",
+    "actual_terminal": "BLOCKED",
+    "expected_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "expected_initial": "BLOCKED",
+    "expected_terminal": "BLOCKED",
+    "package_version": null,
+    "reason_code": null,
+    "run_status": null
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Посмотреть детали",
+      "cta_url": "https://flow.example.test/term-14",
+      "name": "Запрещённый контакт",
+      "notes": "Не обходить запрет каналов.",
+      "objective": "Проверить приоритет запрета контакта",
+      "offer_period": null,
+      "product_id": "synthetic_term_plan",
+      "segment_id": "segment_restricted",
+      "synthetic": true,
+      "tone": "краткий",
+      "trigger_id": "trigger_review"
+    },
+    "expected": {
+      "blocker_codes": [
+        "CONTACT_CHANNELS_BLOCKED"
+      ],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [],
+      "status": "BLOCKED"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0,
+    "full_worker_occupancy_ms": 71,
+    "prompt_tokens": 0,
+    "provider_calls": 0,
+    "total_tokens": 0,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 71,
+    "workflow_elapsed_ms": 71
+  },
+  "mode": "validation_only",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": null,
+    "sms": null,
+    "summary": null,
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": null,
+    "assertions": {
+      "contact_blocker": true,
+      "controlled_without_generation": true
+    },
+    "checked_fact_ids": [],
+    "checked_ids": [],
+    "checked_policy_ids": [],
+    "claim_evidence": [],
+    "deterministic_score": null,
+    "findings": [],
+    "sms_metrics": null,
+    "validation_blockers": [
+      "CONTACT_CHANNELS_BLOCKED"
+    ],
+    "validation_questions": [],
+    "validation_status": "BLOCKED"
+  },
+  "synthetic": true,
+  "title": "Оба канала запрещены consent policy"
+}

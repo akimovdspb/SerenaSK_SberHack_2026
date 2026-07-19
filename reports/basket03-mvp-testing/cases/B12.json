@@ -1,0 +1,90 @@
+{
+  "case_id": "B12",
+  "execution": {
+    "actual_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "actual_initial": "NOT_APPLICABLE",
+    "actual_terminal": "NOT_APPLICABLE",
+    "expected_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "expected_initial": "NOT_APPLICABLE",
+    "expected_terminal": "NOT_APPLICABLE",
+    "package_version": null,
+    "reason_code": null,
+    "run_status": null
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "email"
+      ],
+      "cta_label": "Посмотреть детали",
+      "cta_url": "https://flow.example.test/term-14",
+      "name": "Повторное предложение",
+      "notes": "Продукт уже есть в synthetic profile.",
+      "objective": "Не предлагать уже подключённый продукт",
+      "offer_period": null,
+      "product_id": "synthetic_term_plan",
+      "segment_id": "segment_existing",
+      "synthetic": true,
+      "tone": "деловой",
+      "trigger_id": "trigger_planning"
+    },
+    "expected": {
+      "blocker_codes": [
+        "PRODUCT_ALREADY_ACTIVE"
+      ],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [],
+      "status": "NOT_APPLICABLE"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0,
+    "full_worker_occupancy_ms": 18,
+    "prompt_tokens": 0,
+    "provider_calls": 0,
+    "total_tokens": 0,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 18,
+    "workflow_elapsed_ms": 18
+  },
+  "mode": "validation_only",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": null,
+    "sms": null,
+    "summary": null,
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": null,
+    "assertions": {
+      "already_active": true,
+      "controlled_without_generation": true
+    },
+    "checked_fact_ids": [],
+    "checked_ids": [],
+    "checked_policy_ids": [],
+    "claim_evidence": [],
+    "deterministic_score": null,
+    "findings": [],
+    "sms_metrics": null,
+    "validation_blockers": [
+      "PRODUCT_ALREADY_ACTIVE"
+    ],
+    "validation_questions": [],
+    "validation_status": "NOT_APPLICABLE"
+  },
+  "synthetic": true,
+  "title": "Продукт уже подключён"
+}

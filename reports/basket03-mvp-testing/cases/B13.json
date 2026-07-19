@@ -1,0 +1,99 @@
+{
+  "case_id": "B13",
+  "execution": {
+    "actual_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "actual_initial": "NEEDS_INPUT",
+    "actual_terminal": "NEEDS_INPUT",
+    "expected_channels": {
+      "email": "NOT_RUN",
+      "sms": "NOT_RUN"
+    },
+    "expected_initial": "NEEDS_INPUT",
+    "expected_terminal": "NEEDS_INPUT",
+    "package_version": null,
+    "reason_code": null,
+    "run_status": null
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Открыть настройку",
+      "cta_url": "https://alerts.example.test/setup",
+      "name": "Настройка уведомлений",
+      "notes": "Не выдумывать окно доставки уведомления.",
+      "objective": "Проверить отсутствие критического факта",
+      "offer_period": null,
+      "product_id": "synthetic_alerts",
+      "segment_id": "segment_alert",
+      "synthetic": true,
+      "tone": "понятный",
+      "trigger_id": "trigger_cashflow"
+    },
+    "expected": {
+      "blocker_codes": [
+        "CRITICAL_FACT_MISSING"
+      ],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [],
+      "status": "NEEDS_INPUT"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0,
+    "full_worker_occupancy_ms": 20,
+    "prompt_tokens": 0,
+    "provider_calls": 0,
+    "total_tokens": 0,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 20,
+    "workflow_elapsed_ms": 20
+  },
+  "mode": "validation_only",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": null,
+    "sms": null,
+    "summary": null,
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": null,
+    "assertions": {
+      "controlled_without_generation": true,
+      "critical_fact_missing": true
+    },
+    "checked_fact_ids": [],
+    "checked_ids": [],
+    "checked_policy_ids": [],
+    "claim_evidence": [],
+    "deterministic_score": null,
+    "findings": [],
+    "sms_metrics": null,
+    "validation_blockers": [
+      "CRITICAL_FACT_MISSING"
+    ],
+    "validation_questions": [
+      {
+        "message": "Обновите синтетическую карточку фактов до запуска генерации.",
+        "options": [],
+        "path": "/product_id",
+        "question_id": "critical_fact_missing",
+        "reason": "Текущая карточка фактов не содержит обязательный подтверждённый факт."
+      }
+    ],
+    "validation_status": "NEEDS_INPUT"
+  },
+  "synthetic": true,
+  "title": "Отсутствует критический факт"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "contact_policies": [
+    {"policy_id":"contact_standard_v1","version":1,"max_touches_per_window":3,"window_days":14,"require_channel_consent":true,"synthetic":true}
+  ],
+  "legal_policies": [
+    {"policy_id":"legal_base_v1","version":1,"required_disclaimer_ids":[],"prohibited_claim_ids":["claim_guaranteed_result"],"synthetic":true},
+    {"policy_id":"legal_label_v1","version":1,"required_disclaimer_ids":["fact_label_notice"],"prohibited_claim_ids":["claim_best_market","claim_guaranteed_result"],"synthetic":true}
+  ],
+  "concepts": [
+    {"concept_id":"concept_online_connection","accepted_surface_forms":["подключение онлайн"],"synthetic":true},
+    {"concept_id":"payouts_via_online_bank","accepted_surface_forms":["подготовка выплат в онлайн-банке","готовить выплаты в онлайн-банке"],"synthetic":true},
+    {"concept_id":"invoice_status_list","accepted_surface_forms":["статусы счетов в едином списке"],"synthetic":true}
+  ],
+  "channel_policies": {
+    "version": 1,
+    "sms": {"max_segments": 3},
+    "email": {"subject_max_chars": 78, "preheader_max_chars": 140},
+    "synthetic": true
+  },
+  "rules_version": "d2a514d9fd2ce98d077d74071b12ef9f0ce9ffac4f6d547a1741b9a4f44f70d4"
+}

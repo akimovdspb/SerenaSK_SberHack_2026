@@ -1,0 +1,22 @@
+{
+  "name": "communication-factory",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @communication-factory/web",
+    "dev": "npm run dev --workspace @communication-factory/web",
+    "lint": "npm run lint --workspace @communication-factory/web",
+    "typecheck": "npm run typecheck --workspace @communication-factory/web",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  },
+  "engines": {
+    "node": ">=20 <23",
+    "npm": ">=10 <12"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "packages": {
+    "colorama@0.4.6": {
+      "license": "BSD-3-Clause",
+      "reason": "Platform-specific locked package is not installed in the Linux verification environment."
+    },
+    "pywin32@312": {
+      "license": "PSF-2.0",
+      "reason": "Platform-specific locked package is not installed in the Linux verification environment."
+    }
+  }
+}

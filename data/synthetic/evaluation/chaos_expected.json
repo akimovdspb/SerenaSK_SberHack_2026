@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "basket_version": "1.0.0",
+  "cases": [
+    {"case_id":"X01","fault":"ouroboros_admission_unavailable","expected":"typed admission failure, no crash, no provider fallback"},
+    {"case_id":"X02","fault":"malformed_or_timed_out_mcp_payload","expected":"typed validation failure, operation remains bounded, no duplicate save"},
+    {"case_id":"X03","fault":"provider_timeout","expected":"bounded cancel/reconcile then marked deterministic fallback"},
+    {"case_id":"X04","fault":"duplicate_request","expected":"one domain result and one physical billable path"},
+    {"case_id":"X05","fault":"restart_with_stale_running","expected":"startup reconciliation reaches honest terminal state"}
+  ]
+}

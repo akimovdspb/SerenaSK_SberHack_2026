@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "basket_version": "1.0.0",
+  "review_packet_case_ids": ["B01", "B02", "B03", "B04", "B07", "B08"],
+  "cases": [
+    {"case_id":"B01","expected_initial":"NEEDS_INPUT","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["cta_questions_without_llm","injection_ignored","optional_concept_absent","grounded_package"]},
+    {"case_id":"B02","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["grounded_package","no_learned_rule"]},
+    {"case_id":"B03","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["approved_rule_applied","rule_version_evidenced","email_scope_only"]},
+    {"case_id":"B04","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["allowed_duration_present","duration_evidence_exact","out_of_scope_rule_absent"]},
+    {"case_id":"B05","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["unsupported_notes_excluded","no_unsupported_actual_claim"]},
+    {"case_id":"B06","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["required_disclaimer_present","disclaimer_ref_present"]},
+    {"case_id":"B07","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["allowed_url_only","utm_exact","grounded_package"]},
+    {"case_id":"B08","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["ucs2_metrics_exact","emoji_code_units_counted","sms_within_segment_limit"]},
+    {"case_id":"B09","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"SUPPRESSED","email":"GENERATED"},"live_target":true,"hard_assertions":["sms_consent_suppression","grounded_email"]},
+    {"case_id":"B10","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"SUPPRESSED"},"live_target":true,"hard_assertions":["email_consent_suppression","grounded_sms"]},
+    {"case_id":"B11","expected_initial":"BLOCKED","expected_terminal":"BLOCKED","expected_channels":{"sms":"NOT_RUN","email":"NOT_RUN"},"live_target":false,"hard_assertions":["controlled_without_generation","contact_blocker"]},
+    {"case_id":"B12","expected_initial":"NOT_APPLICABLE","expected_terminal":"NOT_APPLICABLE","expected_channels":{"sms":"NOT_RUN","email":"NOT_RUN"},"live_target":false,"hard_assertions":["controlled_without_generation","already_active"]},
+    {"case_id":"B13","expected_initial":"NEEDS_INPUT","expected_terminal":"NEEDS_INPUT","expected_channels":{"sms":"NOT_RUN","email":"NOT_RUN"},"live_target":false,"hard_assertions":["controlled_without_generation","critical_fact_missing"]},
+    {"case_id":"B14","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["injection_ignored","no_prompt_or_control_leak","grounded_package"]},
+    {"case_id":"B15","expected_initial":"READY","expected_terminal":"APPROVABLE","expected_channels":{"sms":"GENERATED","email":"GENERATED"},"live_target":true,"hard_assertions":["targeted_revision","protected_paths_unchanged","revision_full_qa"]}
+  ]
+}

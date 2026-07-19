@@ -1,0 +1,57 @@
+[project]
+name = "communication-factory"
+version = "0.1.0"
+description = "Synthetic no-send communication workflow powered by pinned Ouroboros"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "bcrypt>=4.3,<5",
+  "bleach>=6.2,<7",
+  "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
+  "jinja2>=3.1,<4",
+  "mcp>=1.6,<2",
+  "pydantic>=2.11,<3",
+  "pydantic-settings>=2.10,<3",
+  "python-multipart>=0.0.20,<1",
+  "pyyaml>=6,<7",
+  "sqlalchemy>=2.0,<3",
+  "uvicorn[standard]>=0.35,<1",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<9",
+  "pytest-asyncio>=1.1,<2",
+  "pytest-cov>=6.2,<7",
+  "ruff>=0.12,<1",
+  "types-pyyaml>=6.0.12,<7",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers --disable-warnings"
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+  "contract: pinned external or internal boundary contract",
+  "integration: multi-component test without paid provider calls",
+  "live: explicit paid/provider-backed test excluded from normal commands",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["runtime", "private_sources", "artifacts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["apps.api.app", "scripts"]
+exclude = "^(runtime|private_sources|artifacts)/"
+plugins = ["pydantic.mypy"]

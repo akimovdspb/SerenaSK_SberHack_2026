@@ -1,0 +1,11 @@
+/.gitattributes text eol=lf
+/ouroboros/skills/communication_factory/SKILL.md text eol=lf
+/prompts/communication_factory.ru.md text eol=lf
+/model_handoff/** text eol=lf
+/reports/basket03-mvp-testing/**/*.json text eol=lf
+/reports/basket03-mvp-testing/*.json text eol=lf
+/reports/basket03-mvp-testing/*.csv text eol=lf
+/reports/basket03-mvp-testing/*.html text eol=lf
+/reports/basket03-mvp-testing/*.md text eol=lf
+/reports/basket03-mvp-testing/*.sha256 text eol=lf
+/reports/basket03-mvp-testing/*.pdf binary

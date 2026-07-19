@@ -1,0 +1,230 @@
+{
+  "case_id": "B02",
+  "execution": {
+    "actual_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "actual_initial": "READY",
+    "actual_terminal": "APPROVABLE",
+    "expected_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "expected_initial": "READY",
+    "expected_terminal": "APPROVABLE",
+    "package_version": 1,
+    "reason_code": null,
+    "run_status": "COMPLETED"
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Открыть обзор",
+      "cta_url": "https://invoice.example.test/overview",
+      "name": "Обзор статусов",
+      "notes": "Обычный полный бриф без learned rule.",
+      "objective": "Показать синтетический список статусов счетов",
+      "offer_period": null,
+      "product_id": "synthetic_invoice_flow",
+      "segment_id": "segment_growth",
+      "synthetic": true,
+      "tone": "спокойный деловой",
+      "trigger_id": "trigger_planning"
+    },
+    "expected": {
+      "blocker_codes": [],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [
+        "fact_invoice_visibility",
+        "fact_invoice_cta"
+      ],
+      "status": "READY"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 65024,
+    "completion_tokens": 7939,
+    "cost_usd": 0.04760206,
+    "full_worker_occupancy_ms": 280572,
+    "prompt_tokens": 81396,
+    "provider_calls": 5,
+    "total_tokens": 89335,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 280562,
+    "workflow_elapsed_ms": 284084
+  },
+  "mode": "live_ouroboros",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": {
+      "cta_label": "Открыть обзор",
+      "cta_url": "https://invoice.example.test/overview",
+      "disclaimer_ids": [],
+      "fact_refs": [
+        "fact_invoice_visibility",
+        "fact_invoice_cta"
+      ],
+      "headline": "Счета Поток",
+      "personalization_refs": [],
+      "plain_text": "Статусы учебных счетов доступны в едином списке. Открыть обзор: https://invoice.example.test/overview",
+      "preheader": "Синтетическая коммуникация без отправки.",
+      "sections": [
+        {
+          "body": "Статусы учебных счетов доступны в едином списке.",
+          "fact_refs": [
+            "fact_invoice_visibility"
+          ],
+          "heading": "",
+          "kind": "body",
+          "personalization_refs": [],
+          "section_id": "sec_001"
+        }
+      ],
+      "subject": "Счета Поток"
+    },
+    "sms": {
+      "cta_url": "https://invoice.example.test/overview",
+      "fact_refs": [
+        "fact_invoice_visibility",
+        "fact_invoice_cta"
+      ],
+      "personalization_refs": [],
+      "text": "Счета Поток. Статусы учебных счетов доступны в едином списке. Открыть обзор: https://invoice.example.test/overview"
+    },
+    "summary": "Синтетический пакет без отправки.",
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": true,
+    "assertions": {
+      "grounded_package": true,
+      "no_learned_rule": true
+    },
+    "checked_fact_ids": [
+      "fact_invoice_cta",
+      "fact_invoice_visibility"
+    ],
+    "checked_ids": [
+      "QA01",
+      "QA02",
+      "QA03",
+      "QA04",
+      "QA05",
+      "QA06",
+      "QA07",
+      "QA08",
+      "QA09",
+      "QA10",
+      "QA11",
+      "QA12",
+      "QA13",
+      "QA14",
+      "QA15",
+      "QA16",
+      "QA17",
+      "QA18",
+      "QA19",
+      "QA20",
+      "QA21",
+      "QA22"
+    ],
+    "checked_policy_ids": [
+      "contact_standard_v1",
+      "legal_base_v1"
+    ],
+    "claim_evidence": [
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_vis_sms_text_001",
+        "claim_type": "concept",
+        "fact_id": "fact_invoice_visibility",
+        "normalized_value": "invoice_status_list",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "Статусы учебных счетов доступны в едином списке."
+      },
+      {
+        "artifact_path": "/email/sections/0/body",
+        "channel": "email",
+        "claim_id": "claim_vis_email_body_001",
+        "claim_type": "concept",
+        "fact_id": "fact_invoice_visibility",
+        "normalized_value": "invoice_status_list",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "Статусы учебных счетов доступны в едином списке."
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_vis_email_plain_001",
+        "claim_type": "concept",
+        "fact_id": "fact_invoice_visibility",
+        "normalized_value": "invoice_status_list",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "Статусы учебных счетов доступны в едином списке."
+      },
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_cta_sms_text_001",
+        "claim_type": "url",
+        "fact_id": "fact_invoice_cta",
+        "normalized_value": "https://invoice.example.test/overview",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "https://invoice.example.test/overview"
+      },
+      {
+        "artifact_path": "/sms/cta_url",
+        "channel": "sms",
+        "claim_id": "claim_cta_sms_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_invoice_cta",
+        "normalized_value": "https://invoice.example.test/overview",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "https://invoice.example.test/overview"
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_cta_email_plain_001",
+        "claim_type": "url",
+        "fact_id": "fact_invoice_cta",
+        "normalized_value": "https://invoice.example.test/overview",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "https://invoice.example.test/overview"
+      },
+      {
+        "artifact_path": "/email/cta_url",
+        "channel": "email",
+        "claim_id": "claim_cta_email_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_invoice_cta",
+        "normalized_value": "https://invoice.example.test/overview",
+        "source_id": "source_invoice_card_v1",
+        "text_fragment": "https://invoice.example.test/overview"
+      }
+    ],
+    "deterministic_score": 100,
+    "findings": [],
+    "sms_metrics": {
+      "characters": 114,
+      "code_units": 114,
+      "encoding": "UCS-2",
+      "segments": 2,
+      "septets": null,
+      "units_per_segment": 67
+    },
+    "validation_blockers": [],
+    "validation_questions": [],
+    "validation_status": "READY"
+  },
+  "synthetic": true,
+  "title": "Полный обычный бриф без learned rule"
+}

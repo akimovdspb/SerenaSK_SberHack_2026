@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/razzant/ouroboros",
+  "tag": "v6.61.4",
+  "commit": "a00d51dd414f794d830cacf7da760061e442fa88",
+  "source_archive": "https://codeload.github.com/razzant/ouroboros/tar.gz/a00d51dd414f794d830cacf7da760061e442fa88",
+  "source_archive_sha256": "b23c29ad47f0781c5414cd9d708bdcddfc9cf592188d1c09ff1d5265f1faa4b4",
+  "base_image": "docker.io/library/python:3.12-slim-bookworm",
+  "base_image_index_digest": "sha256:8a7e7cc04fd3e2bd787f7f24e22d5d119aa590d429b50c95dfe12b3abe52f48b",
+  "base_image_amd64_digest": "sha256:db8e83a44af476c636a6a753adace39ad37863b63c0afd2862db7bbafeeb3944",
+  "requirements_lock_sha256": "ec07639b3a37e9c9474f8c64f50fb46d439732bf96473333f966f0627e769a1e",
+  "license_declared_by_upstream": "MIT",
+  "activation_mode": "adapter_injected",
+  "runtime_patch": {
+    "decision_id": "CF-RP-001",
+    "status": "approved",
+    "adapter_path": "/opt/communication-factory/strict_tool_adapter.py"
+  },
+  "tool_result_transport_patch": {
+    "decision_id": "CF-RP-002",
+    "status": "implemented_pending_live_requalification",
+    "adapter_path": "/opt/communication-factory/runtime_launcher.py",
+    "target_tools": [
+      "mcp_factory__cf_context_get",
+      "mcp_factory__cf_script_context_get"
+    ],
+    "limit_chars": 80000,
+    "telemetry": "metadata_only"
+  },
+  "safety_response_schema_patch": {
+    "decision_id": "CF-RP-003",
+    "status": "owner_directed_requalification",
+    "adapter_path": "/opt/communication-factory/runtime_launcher.py",
+    "provider_profile": "openrouter-glm-5.2-functional",
+    "call_types": [
+      "safety_supervisor",
+      "safety_supervisor_repair"
+    ],
+    "verdicts": [
+      "SAFE",
+      "SUSPICIOUS",
+      "DANGEROUS"
+    ],
+    "safety_mode": "full"
+  }
+}

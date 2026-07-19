@@ -1,0 +1,63 @@
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	header {
+		Content-Security-Policy "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		-Server
+	}
+
+	@health path /healthz
+	handle @health {
+		respond "ok" 200
+	}
+
+	handle /auth/* {
+		reverse_proxy 127.0.0.1:8090 {
+			header_up X-CF-Client-IP {remote_host}
+		}
+	}
+
+	handle /login* {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	@public_static path /assets/* /favicon.svg
+	handle @public_static {
+		root * /srv
+		file_server
+	}
+
+	handle {
+		route {
+			request_header -X-CF-Actor
+			request_header -X-CF-Actor-Role
+			forward_auth 127.0.0.1:8090 {
+				uri /auth/verify
+				header_up X-CF-Client-IP {remote_host}
+				copy_headers X-CF-Actor X-CF-Actor-Role
+			}
+
+			@internal path /internal/* /api/tasks* /api/mcp* /api/extensions* /ws*
+			respond @internal 404
+
+			handle /api/v1/* {
+				reverse_proxy 127.0.0.1:8000
+			}
+
+			handle {
+				root * /srv
+				try_files {path} /index.html
+				file_server
+			}
+		}
+	}
+}

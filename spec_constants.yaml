@@ -1,0 +1,334 @@
+schema_version: 5
+spec_version: "5.2.3"
+normative_source: "01_TECH_SPEC_SOURCE_OF_TRUTH.md"
+
+product:
+  id: communication_factory
+  name_ru: "Фабрика коммуникаций"
+  locale: ru-RU
+  data_mode: synthetic_only
+  external_send_enabled: false
+
+scope:
+  p0_channels:
+    - sms
+    - email
+  p1_channels:
+    - chat_script
+    - voice_script
+    - clm
+    - banner
+    - presentation
+  p0_rule_types:
+    - forbid_phrase
+    - require_phrase
+    - require_fact
+    - require_concept_id
+    - tone_hint
+  p0_rule_scopes:
+    - product
+    - channel
+    - segment
+
+ouroboros:
+  baseline_tag: v6.61.4
+  baseline_sha: a00d51dd414f794d830cacf7da760061e442fa88
+  verify_latest_stable_on_start: true
+  auto_upgrade_to_latest_stable: false
+  runtime_frozen_after_evaluation: true
+  runtime_mode: light
+  safety_mode: full
+  task_review_mode: "off"
+  acceptance_max_improvement_passes: 0
+  evolution_enabled: false
+  background_consciousness_enabled: false
+  post_task_evolution_enabled: false
+  memory_mode: forked
+  project_id_pattern: "campaign_<filesystem_safe_uuid>"
+  task_deadline_seconds_initial: 25
+  task_timeout_profile: initial_tunable_within_terminal_deadline
+  global_tool_timeout_seconds: 5
+  finalization_grace_seconds_initial: 2
+  answer_protocol: final_answer_line
+
+provider_budget:
+  owner_allowances_are_operational_assumptions: true
+  operator_limits_workstation_source: operator-limits.local.yaml
+  operator_limits_vps_path: /home/dmitry/secrets/communication-factory/operator-limits.yaml
+  operator_limits_must_be_gitignored: true
+  account_wide_remaining_quota_claim_allowed: false
+  usage_scope: project_observed_only
+  use_pinned_ouroboros_total_budget: true
+  ouroboros_total_budget_setting: TOTAL_BUDGET
+  ouroboros_per_task_cost_setting: OUROBOROS_PER_TASK_COST_USD
+  live_run_token_cap_env: EVAL_MAX_TOKENS
+  live_run_token_cap_required: true
+  live_run_dollar_cap_env: EVAL_MAX_COST_USD
+  live_run_dollar_cap_required: true
+  live_run_concurrency: 1
+  smoke_then_pilots_then_projection_required: true
+  project_usage_checked_between_cases: true
+  missing_usage_stops_run_expansion: true
+  account_wide_rolling_quota_service_required: false
+  provider_proxy_for_metering_required: false
+  ouroboros_core_patch_for_metering_required: false
+  budget_exhaustion_allows_provider_fallback: false
+  models:
+    gpt-5.4-mini:
+      provider: openai
+      default_p0_route: true
+    gpt-5.4:
+      provider: openai
+      default_p0_route: false
+      comparator_only: true
+      comparator_opt_in_env: ALLOW_GPT54_COMPARATOR
+      comparator_run_id_required: true
+  openrouter:
+    enabled_by_default: false
+    balance_is_spending_authorization: false
+    explicit_owner_profile_required: true
+    exact_model_id_required: true
+    separate_provider_model_run_tracking_required: true
+    per_run_token_cap_required: true
+    daily_token_cap_required: true
+    dollar_cap_required: true
+    automatic_fallback_on_openai_exhaustion: false
+
+provider_credentials:
+  owner_openai_key_source: OPENAI_API_KEY.txt
+  exact_vps_source_path: /home/dmitry/secrets/communication-factory/OPENAI_API_KEY.txt
+  repository_copy_is_security_violation_on_vps: true
+  source_must_be_gitignored: true
+  source_must_be_untracked: true
+  source_single_nonempty_line_required: true
+  dockerignore_required: true
+  image_history_and_filesystem_scan_required: true
+  vps_file_mode: "0600"
+  docker_secret_path: /run/secrets/openai_api_key
+  ouroboros_expected_env: OPENAI_API_KEY
+  container_entrypoint_reads_secret_and_exports_env: true
+  recipient_service: ouroboros_only
+  codex_process_must_not_receive_key: true
+  source_file_mutation_requires_owner_approval: true
+
+skill_activation:
+  required: true
+  canonical_mode: adapter_injected
+  allowed_modes:
+    - native_verified
+    - adapter_injected
+  fail_closed_on_missing_activation: true
+  single_editable_source: ouroboros/skills/communication_factory/SKILL.md
+  generated_prompt_projection: prompts/communication_factory.ru.md
+  generated_projection_byte_equal_required: true
+  contract_marker: COMMUNICATION_FACTORY_CONTRACT_V1
+  reviewed_skill_hash_required: true
+  effective_prompt_hash_required: true
+  first_provider_request_probe_required: true
+  first_provider_request_probe_forwards_to_provider: false
+  injected_task_field: constraints
+  injected_via_authoritative_system_task_contract: true
+  shared_read_only_skill_mount_required: true
+  contract_lock_path: runtime/contracts/communication_factory.lock.json
+  evidence_lock_copy_path: artifacts/evidence/contracts/communication_factory.lock.json
+  contract_probe_provider_credentials_allowed: false
+  contract_probe_provider_egress_allowed: false
+
+tool_isolation:
+  exact_provider_tool_set_required: true
+  allowed_effective_tool_names:
+    - mcp_factory__cf_context_get
+    - mcp_factory__cf_draft_save
+  deny_all_other_builtin_tools: true
+  deny_all_extension_tools: true
+  deny_all_other_mcp_tools: true
+  full_pre_deny_inventory_required: true
+  generated_disabled_tools_required: true
+  provider_schema_probe_required: true
+  provider_schema_probe_forwards_to_provider: false
+  inventory_hash_required: true
+  disabled_execution_probe_required: true
+  fail_closed_on_inventory_drift: true
+
+mcp:
+  server_id: factory
+  settings_managed: true
+  public: false
+  tools:
+    - cf_context_get
+    - cf_draft_save
+  context_timeout_seconds: 3
+  save_timeout_seconds: 5
+  tool_timeout_seconds: 5
+  outer_timeout_cleanup_margin_seconds: 3
+  settings_readback_required: true
+  successful_logical_operations_per_generation: 2
+  transport_retry_max: 1
+  max_payload_bytes: 65536
+
+post_task:
+  summary_reflection_probe_required: true
+  provider_call_ledger_required: true
+  evolution_flag_does_not_disable_summary_reflection: true
+  user_visible_latency_measured: true
+  full_worker_occupancy_measured: true
+  required_timestamps:
+    - task_created
+    - context_tool_completed
+    - draft_saved
+    - task_result_persisted
+    - task_terminal
+    - worker_released
+  provider_call_categories:
+    - main_generation
+    - safety
+    - post_task_summary
+    - post_task_reflection
+    - post_task_evolution_decision
+    - provider_retry
+  upstream_core_patch_requires_owner_approval: true
+
+network:
+  canonical_profile: docker_compose_private
+  gateway_container_bind: "0.0.0.0"
+  gateway_container_port: 8080
+  gateway_host_bind: "127.0.0.1"
+  gateway_host_port: 8080
+  app_container_bind: "0.0.0.0"
+  app_container_port: 8000
+  app_host_port_published: false
+  ouroboros_container_bind: "0.0.0.0"
+  ouroboros_container_port: 8765
+  ouroboros_host_port_published: false
+  ouroboros_trust_nonlocal_without_password: true
+  gateway_routes_internal_mcp: false
+  gateway_routes_ouroboros: false
+  provider_keys_service: ouroboros_only
+
+security:
+  env_example_secret_values_empty: true
+  env_example_non_secret_defaults_allowed: true
+
+handoff:
+  directory_name: communication-factory-spec
+  archive_root_name: communication-factory-spec
+  ascii_root_required: true
+  file_count: 7
+
+execution:
+  modes:
+    - live_ouroboros
+    - deterministic_template
+    - replay
+    - validation_only
+    - mock
+  terminal_deadline_seconds: 29
+  terminal_action_limit_exclusive_seconds: 30
+  api_admission_p95_seconds: 1
+  first_event_seconds: 1
+  max_saved_agent_drafts_per_operation: 1
+  semantic_auto_repair_passes: 0
+  backend_llm_allowed: false
+  parallel_agent_and_fallback_allowed: false
+
+evaluation:
+  business_case_count: 15
+  minimum_live_business_cases: 10
+  target_live_business_cases: 12
+  chaos_case_count: 5
+  qualitative_review_case_count: 6
+  consecutive_golden_ui_runs: 5
+  crash_target: 0
+  over_30_seconds_target: 0
+  unsupported_numeric_claim_target: 0
+  injection_success_target: 0
+  explicit_live_opt_in_required: true
+  evaluation_id_required: true
+  provider_profile_required: true
+  token_cap_required: true
+  spend_cap_required: true
+  project_local_live_run_budget_control_required: true
+  new_immutable_evidence_directory_required: true
+  verify_implementation_may_start_live_eval: false
+
+demo:
+  target_seconds: 168
+  hard_limit_seconds: 180
+  rehearsal_target_min_seconds: 165
+  rehearsal_target_max_seconds: 170
+  minimum_full_timed_rehearsals: 2
+  voice_over_required: true
+  recording_resolution: 1920x1080_or_higher
+  recording_browser_zoom: 90_to_100_percent
+  narrow_responsive_smoke_required: true
+  main_case_mode: live_ouroboros
+  stored_live_result_required_fields:
+    - run_id
+    - completed_at
+    - execution_mode
+    - manifest_hash
+    - applied_rule_version_id
+
+evidence:
+  root: artifacts/evidence
+  required_formats:
+    - pdf
+    - jpg
+    - html
+    - csv
+    - json
+    - jsonl
+  checksums_required: true
+  immutable_after_finalize: true
+
+make_targets:
+  - init
+  - setup
+  - up
+  - down
+  - doctor
+  - bootstrap
+  - skill-contract
+  - budget-status
+  - test-budget
+  - seed
+  - demo-reset
+  - demo-check
+  - lint
+  - format-check
+  - typecheck
+  - test
+  - test-contract
+  - build
+  - smoke
+  - e2e
+  - test-chaos
+  - security
+  - eval-replay
+  - eval-live
+  - evidence
+  - verify-core
+  - verify-implementation
+  - verify
+  - verify-submission
+  - clean-clone-rehearsal
+  - package-submission
+
+submission:
+  readme_startup_steps: 4
+  video_required: true
+  report_required: true
+  repository_link_required: true
+  secret_scan_required: true
+  history_secret_scan_required: true
+  human_review_case_count: 6
+  independent_signoff_count: 2
+
+completion:
+  codex_gate: verify-implementation
+  verify_alias: verify-implementation
+  operator_wait_status: WAITING_FOR_OPERATOR
+  skill_operator_wait_status: WAITING_FOR_OPERATOR_SKILL_APPROVAL
+  runtime_patch_wait_status: WAITING_FOR_OPERATOR_RUNTIME_PATCH
+  final_gate: verify-submission
+  fabricate_human_evidence_allowed: false

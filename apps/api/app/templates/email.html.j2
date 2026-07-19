@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ email.subject }}</title>
+  </head>
+  <body>
+    <main aria-label="Синтетическое письмо без отправки">
+      <p><strong>SYNTHETIC · NO SEND</strong></p>
+      <h1>{{ email.headline }}</h1>
+      {% for section in email.sections %}
+      <section data-kind="{{ section.kind }}">
+        {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+        <p>{{ section.body }}</p>
+      </section>
+      {% endfor %}
+      <p><a href="{{ email.cta_url }}" rel="noopener noreferrer">{{ email.cta_label }}</a></p>
+    </main>
+  </body>
+</html>

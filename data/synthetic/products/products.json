@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "seed": "communication-factory-p0-v1",
+  "products": [
+    {
+      "fact_card": {
+        "product_id": "synthetic_term_plan",
+        "version": 1,
+        "exact_name": "План Срок 14",
+        "allowed_fact_ids": ["fact_term_14_days", "fact_term_cta"],
+        "mandatory_fact_ids": ["fact_term_14_days", "fact_term_cta"],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": ["concept_online_connection"],
+        "required_disclaimer_ids": [],
+        "prohibited_claim_ids": ["claim_instant_activation", "claim_guaranteed_result"],
+        "allowed_cta_urls": ["https://flow.example.test/term-14"],
+        "legal_policy_id": "legal_base_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_term_14_days",
+          "source_id": "source_term_card_v1",
+          "kind": "duration",
+          "canonical_text": "Срок подключения составляет 14 дней.",
+          "normalized_value": {"value": 14, "unit": "day"},
+          "allowed_surface_forms": ["14 дней", "в течение 14 дней"],
+          "valid_from": "2026-01-01T00:00:00Z",
+          "valid_to": "2027-12-31T23:59:59Z",
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_term_cta",
+          "source_id": "source_term_card_v1",
+          "kind": "url",
+          "canonical_text": "Подробнее: https://flow.example.test/term-14",
+          "normalized_value": "https://flow.example.test/term-14",
+          "allowed_surface_forms": ["https://flow.example.test/term-14"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    },
+    {
+      "fact_card": {
+        "product_id": "synthetic_labeled_offer",
+        "version": 1,
+        "exact_name": "Пакет Ясный старт",
+        "allowed_fact_ids": ["fact_label_notice", "fact_label_cta"],
+        "mandatory_fact_ids": ["fact_label_notice", "fact_label_cta"],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": [],
+        "required_disclaimer_ids": ["fact_label_notice"],
+        "prohibited_claim_ids": ["claim_best_market", "claim_guaranteed_result"],
+        "allowed_cta_urls": ["https://start.example.test/details"],
+        "legal_policy_id": "legal_label_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_label_notice",
+          "source_id": "source_label_policy_v1",
+          "kind": "text",
+          "canonical_text": "Учебное предложение. Условия вымышлены.",
+          "normalized_value": "Учебное предложение. Условия вымышлены.",
+          "allowed_surface_forms": ["Учебное предложение. Условия вымышлены."],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_label_cta",
+          "source_id": "source_label_policy_v1",
+          "kind": "url",
+          "canonical_text": "https://start.example.test/details",
+          "normalized_value": "https://start.example.test/details",
+          "allowed_surface_forms": ["https://start.example.test/details"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    },
+    {
+      "fact_card": {
+        "product_id": "synthetic_payroll",
+        "version": 2,
+        "exact_name": "Пульс Выплат",
+        "allowed_fact_ids": [
+          "fact_payroll_setup",
+          "fact_payroll_zero_fee",
+          "fact_payroll_statuses",
+          "fact_payroll_cta"
+        ],
+        "mandatory_fact_ids": [
+          "fact_payroll_setup",
+          "fact_payroll_zero_fee",
+          "fact_payroll_statuses",
+          "fact_payroll_cta"
+        ],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": ["payouts_via_online_bank"],
+        "required_disclaimer_ids": [],
+        "prohibited_claim_ids": ["claim_instant_activation", "claim_guaranteed_result"],
+        "allowed_cta_urls": ["https://pulse-pay.example.test/start"],
+        "channel_required_fact_ids": {
+          "sms": ["fact_payroll_setup", "fact_payroll_zero_fee", "fact_payroll_cta"],
+          "email": [
+            "fact_payroll_setup",
+            "fact_payroll_zero_fee",
+            "fact_payroll_statuses",
+            "fact_payroll_cta"
+          ]
+        },
+        "legal_policy_id": "legal_base_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_payroll_setup",
+          "source_id": "source_payroll_card_v2",
+          "kind": "text",
+          "canonical_text": "Выплаты сотрудникам и самозанятым собираются в одном реестре.",
+          "normalized_value": "one_registry_for_employees_and_self_employed",
+          "allowed_surface_forms": [
+            "Выплаты команде и самозанятым — в одном реестре.",
+            "Выплаты сотрудникам и самозанятым — в одном реестре.",
+            "Соберите выплаты сотрудникам и самозанятым в одном реестре.",
+            "Зарплата штатной команды и выплаты самозанятым собираются в одном реестре."
+          ],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_payroll_zero_fee",
+          "source_id": "source_payroll_card_v2",
+          "kind": "money",
+          "canonical_text": "Комиссия за выплаты самозанятым — 0 ₽.",
+          "normalized_value": {"value": 0, "unit": "RUB"},
+          "allowed_surface_forms": [
+            "Комиссия за самозанятых — 0 ₽.",
+            "Комиссия за выплаты самозанятым — 0 ₽.",
+            "За выплаты самозанятым комиссия составляет 0 ₽."
+          ],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_payroll_statuses",
+          "source_id": "source_payroll_card_v2",
+          "kind": "text",
+          "canonical_text": "Статусы выплат обновляются в личном кабинете.",
+          "normalized_value": "payout_statuses_in_personal_account",
+          "allowed_surface_forms": [
+            "Статусы — в личном кабинете.",
+            "Статусы выплат обновляются в личном кабинете.",
+            "Следите за статусами выплат в личном кабинете."
+          ],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_payroll_cta",
+          "source_id": "source_payroll_card_v2",
+          "kind": "url",
+          "canonical_text": "https://pulse-pay.example.test/start",
+          "normalized_value": "https://pulse-pay.example.test/start",
+          "allowed_surface_forms": ["https://pulse-pay.example.test/start"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    },
+    {
+      "fact_card": {
+        "product_id": "synthetic_invoice_flow",
+        "version": 1,
+        "exact_name": "Счета Поток",
+        "allowed_fact_ids": ["fact_invoice_visibility", "fact_invoice_cta"],
+        "mandatory_fact_ids": ["fact_invoice_visibility", "fact_invoice_cta"],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": [],
+        "required_disclaimer_ids": [],
+        "prohibited_claim_ids": ["claim_zero_errors", "claim_guaranteed_result"],
+        "allowed_cta_urls": ["https://invoice.example.test/overview"],
+        "legal_policy_id": "legal_base_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_invoice_visibility",
+          "source_id": "source_invoice_card_v1",
+          "kind": "concept",
+          "canonical_text": "Статусы учебных счетов доступны в едином списке.",
+          "normalized_value": "invoice_status_list",
+          "allowed_surface_forms": ["статусы счетов в едином списке"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_invoice_cta",
+          "source_id": "source_invoice_card_v1",
+          "kind": "url",
+          "canonical_text": "https://invoice.example.test/overview",
+          "normalized_value": "https://invoice.example.test/overview",
+          "allowed_surface_forms": ["https://invoice.example.test/overview"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    },
+    {
+      "fact_card": {
+        "product_id": "synthetic_alerts",
+        "version": 1,
+        "exact_name": "Сигнал Кассы",
+        "allowed_fact_ids": ["fact_alert_cta", "fact_alert_window"],
+        "mandatory_fact_ids": ["fact_alert_window", "fact_alert_cta"],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": [],
+        "required_disclaimer_ids": [],
+        "prohibited_claim_ids": ["claim_instant_alert", "claim_guaranteed_result"],
+        "allowed_cta_urls": ["https://alerts.example.test/setup"],
+        "legal_policy_id": "legal_base_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_alert_cta",
+          "source_id": "source_alert_card_v1",
+          "kind": "url",
+          "canonical_text": "https://alerts.example.test/setup",
+          "normalized_value": "https://alerts.example.test/setup",
+          "allowed_surface_forms": ["https://alerts.example.test/setup"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    },
+    {
+      "fact_card": {
+        "product_id": "synthetic_pulse",
+        "version": 1,
+        "exact_name": "Пульс 🚀",
+        "allowed_fact_ids": ["fact_pulse_summary", "fact_pulse_utm_cta"],
+        "mandatory_fact_ids": ["fact_pulse_summary", "fact_pulse_utm_cta"],
+        "mandatory_concept_ids": [],
+        "optional_concept_ids": [],
+        "required_disclaimer_ids": [],
+        "prohibited_claim_ids": ["claim_guaranteed_result", "claim_best_market"],
+        "allowed_cta_urls": ["https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"],
+        "legal_policy_id": "legal_base_v1",
+        "contact_policy_id": "contact_standard_v1",
+        "validity_start": "2026-01-01",
+        "validity_end": "2027-12-31",
+        "synthetic": true
+      },
+      "facts": [
+        {
+          "fact_id": "fact_pulse_summary",
+          "source_id": "source_pulse_card_v1",
+          "kind": "text",
+          "canonical_text": "Инсайты собраны из синтетических событий.",
+          "normalized_value": "synthetic_event_summary",
+          "allowed_surface_forms": ["из синтетических событий"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        },
+        {
+          "fact_id": "fact_pulse_utm_cta",
+          "source_id": "source_pulse_card_v1",
+          "kind": "url",
+          "canonical_text": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+          "normalized_value": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+          "allowed_surface_forms": ["https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"],
+          "valid_from": null,
+          "valid_to": null,
+          "synthetic": true
+        }
+      ]
+    }
+  ]
+}

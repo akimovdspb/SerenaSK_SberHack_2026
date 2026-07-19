@@ -1,0 +1,240 @@
+{
+  "case_id": "B15",
+  "execution": {
+    "actual_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "actual_initial": "READY",
+    "actual_terminal": "APPROVABLE",
+    "expected_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "expected_initial": "READY",
+    "expected_terminal": "APPROVABLE",
+    "package_version": 2,
+    "reason_code": null,
+    "run_status": "COMPLETED"
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Посмотреть детали",
+      "cta_url": "https://flow.example.test/term-14",
+      "name": "Точечная редактура",
+      "notes": "После v1 применить feedback с concept_online_connection только к e-mail.",
+      "objective": "Проверить immutable v1, scoped patch, v2 diff и полный QA",
+      "offer_period": null,
+      "product_id": "synthetic_term_plan",
+      "segment_id": "segment_growth",
+      "synthetic": true,
+      "tone": "спокойный деловой",
+      "trigger_id": "trigger_planning"
+    },
+    "expected": {
+      "blocker_codes": [],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [
+        "fact_term_14_days",
+        "fact_term_cta"
+      ],
+      "status": "READY"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 144662,
+    "completion_tokens": 15892,
+    "cost_usd": 0.08875632,
+    "full_worker_occupancy_ms": 195697,
+    "prompt_tokens": 168643,
+    "provider_calls": 10,
+    "total_tokens": 184535,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 195691,
+    "workflow_elapsed_ms": 355047
+  },
+  "mode": "live_ouroboros",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": {
+      "cta_label": "Посмотреть детали",
+      "cta_url": "https://flow.example.test/term-14",
+      "disclaimer_ids": [],
+      "fact_refs": [
+        "fact_term_14_days",
+        "fact_term_cta"
+      ],
+      "headline": "План Срок 14",
+      "personalization_refs": [],
+      "plain_text": "План Срок 14\n\nСрок подключения составляет 14 дней. Доступно подключение онлайн.\n\nПосмотреть детали: https://flow.example.test/term-14",
+      "preheader": "Синтетическая коммуникация без отправки.",
+      "sections": [
+        {
+          "body": "Срок подключения составляет 14 дней. Доступно подключение онлайн.",
+          "fact_refs": [
+            "fact_term_14_days"
+          ],
+          "heading": "",
+          "kind": "body",
+          "personalization_refs": [],
+          "section_id": "section_1"
+        }
+      ],
+      "subject": "План Срок 14"
+    },
+    "sms": {
+      "cta_url": "https://flow.example.test/term-14",
+      "fact_refs": [
+        "fact_term_14_days",
+        "fact_term_cta"
+      ],
+      "personalization_refs": [],
+      "text": "План Срок 14. Срок подключения составляет 14 дней. Посмотреть детали: https://flow.example.test/term-14"
+    },
+    "summary": "Синтетический пакет без отправки.",
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": true,
+    "assertions": {
+      "protected_paths_unchanged": true,
+      "revision_full_qa": true,
+      "targeted_revision": true
+    },
+    "checked_fact_ids": [
+      "fact_term_14_days",
+      "fact_term_cta"
+    ],
+    "checked_ids": [
+      "QA01",
+      "QA02",
+      "QA03",
+      "QA04",
+      "QA05",
+      "QA06",
+      "QA07",
+      "QA08",
+      "QA09",
+      "QA10",
+      "QA11",
+      "QA12",
+      "QA13",
+      "QA14",
+      "QA15",
+      "QA16",
+      "QA17",
+      "QA18",
+      "QA19",
+      "QA20",
+      "QA21",
+      "QA22"
+    ],
+    "checked_policy_ids": [
+      "contact_standard_v1",
+      "legal_base_v1"
+    ],
+    "claim_evidence": [
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_dur_sms_text_001",
+        "claim_type": "duration",
+        "fact_id": "fact_term_14_days",
+        "normalized_value": {
+          "unit": "day",
+          "value": 14
+        },
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Срок подключения составляет 14 дней."
+      },
+      {
+        "artifact_path": "/email/sections/0/body",
+        "channel": "email",
+        "claim_id": "claim_dur_email_body_001",
+        "claim_type": "duration",
+        "fact_id": "fact_term_14_days",
+        "normalized_value": {
+          "unit": "day",
+          "value": 14
+        },
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Срок подключения составляет 14 дней."
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_dur_email_plain_001",
+        "claim_type": "duration",
+        "fact_id": "fact_term_14_days",
+        "normalized_value": {
+          "unit": "day",
+          "value": 14
+        },
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Срок подключения составляет 14 дней."
+      },
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_url_sms_text_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Посмотреть детали: https://flow.example.test/term-14"
+      },
+      {
+        "artifact_path": "/sms/cta_url",
+        "channel": "sms",
+        "claim_id": "claim_url_sms_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "https://flow.example.test/term-14"
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_url_email_plain_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "Посмотреть детали: https://flow.example.test/term-14"
+      },
+      {
+        "artifact_path": "/email/cta_url",
+        "channel": "email",
+        "claim_id": "claim_url_email_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_term_cta",
+        "normalized_value": "https://flow.example.test/term-14",
+        "source_id": "source_term_card_v1",
+        "text_fragment": "https://flow.example.test/term-14"
+      }
+    ],
+    "deterministic_score": 100,
+    "findings": [],
+    "sms_metrics": {
+      "characters": 103,
+      "code_units": 103,
+      "encoding": "UCS-2",
+      "segments": 2,
+      "septets": null,
+      "units_per_segment": 67
+    },
+    "validation_blockers": [],
+    "validation_questions": [],
+    "validation_status": "READY"
+  },
+  "synthetic": true,
+  "title": "Targeted feedback создаёт только разрешённую revision"
+}

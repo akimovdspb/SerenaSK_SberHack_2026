@@ -1,0 +1,231 @@
+{
+  "case_id": "B03",
+  "execution": {
+    "actual_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "actual_initial": "READY",
+    "actual_terminal": "APPROVABLE",
+    "expected_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "expected_initial": "READY",
+    "expected_terminal": "APPROVABLE",
+    "package_version": 1,
+    "reason_code": null,
+    "run_status": "COMPLETED"
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Открыть подключение",
+      "cta_url": "https://team.example.test/connect",
+      "name": "Следующий рост команды",
+      "notes": "Использовать только активные проверенные правила.",
+      "objective": "Показать применение утверждённого synthetic rule",
+      "offer_period": null,
+      "product_id": "synthetic_payroll",
+      "segment_id": "segment_payroll",
+      "synthetic": true,
+      "tone": "уверенный без давления",
+      "trigger_id": "trigger_team_growth"
+    },
+    "expected": {
+      "blocker_codes": [],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [
+        "fact_payroll_setup",
+        "fact_payroll_cta"
+      ],
+      "status": "READY"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 68879,
+    "completion_tokens": 9379,
+    "cost_usd": 0.05149201,
+    "full_worker_occupancy_ms": 190555,
+    "prompt_tokens": 82542,
+    "provider_calls": 5,
+    "total_tokens": 91921,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 190547,
+    "workflow_elapsed_ms": 193871
+  },
+  "mode": "live_ouroboros",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": {
+      "cta_label": "Открыть подключение",
+      "cta_url": "https://team.example.test/connect",
+      "disclaimer_ids": [],
+      "fact_refs": [
+        "fact_payroll_setup",
+        "fact_payroll_cta"
+      ],
+      "headline": "Проект Команда+",
+      "personalization_refs": [],
+      "plain_text": "Проект Команда+\n\nПодключение начинается после подтверждения готового брифа. Доступно подключение через онлайн-банк для удобства.\n\nОткрыть подключение: https://team.example.test/connect",
+      "preheader": "Синтетическая коммуникация без отправки.",
+      "sections": [
+        {
+          "body": "Подключение начинается после подтверждения готового брифа. Доступно подключение через онлайн-банк для удобства.",
+          "fact_refs": [
+            "fact_payroll_setup"
+          ],
+          "heading": "",
+          "kind": "body",
+          "personalization_refs": [],
+          "section_id": "section_setup"
+        }
+      ],
+      "subject": "Проект Команда+"
+    },
+    "sms": {
+      "cta_url": "https://team.example.test/connect",
+      "fact_refs": [
+        "fact_payroll_setup",
+        "fact_payroll_cta"
+      ],
+      "personalization_refs": [],
+      "text": "Проект Команда+. Подключение начинается после подтверждения готового брифа. Открыть подключение: https://team.example.test/connect"
+    },
+    "summary": "Синтетический пакет без отправки.",
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": true,
+    "assertions": {
+      "approved_rule_applied": true,
+      "email_scope_only": true,
+      "rule_version_evidenced": true
+    },
+    "checked_fact_ids": [
+      "fact_payroll_cta",
+      "fact_payroll_setup"
+    ],
+    "checked_ids": [
+      "QA01",
+      "QA02",
+      "QA03",
+      "QA04",
+      "QA05",
+      "QA06",
+      "QA07",
+      "QA08",
+      "QA09",
+      "QA10",
+      "QA11",
+      "QA12",
+      "QA13",
+      "QA14",
+      "QA15",
+      "QA16",
+      "QA17",
+      "QA18",
+      "QA19",
+      "QA20",
+      "QA21",
+      "QA22"
+    ],
+    "checked_policy_ids": [
+      "contact_standard_v1",
+      "legal_base_v1"
+    ],
+    "claim_evidence": [
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_setup_sms_text",
+        "claim_type": "text",
+        "fact_id": "fact_payroll_setup",
+        "normalized_value": "brief_required",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "Подключение начинается после подтверждения готового брифа."
+      },
+      {
+        "artifact_path": "/email/sections/0/body",
+        "channel": "email",
+        "claim_id": "claim_setup_email_body",
+        "claim_type": "text",
+        "fact_id": "fact_payroll_setup",
+        "normalized_value": "brief_required",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "Подключение начинается после подтверждения готового брифа."
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_setup_email_plain",
+        "claim_type": "text",
+        "fact_id": "fact_payroll_setup",
+        "normalized_value": "brief_required",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "Подключение начинается после подтверждения готового брифа."
+      },
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_cta_sms_text",
+        "claim_type": "url",
+        "fact_id": "fact_payroll_cta",
+        "normalized_value": "https://team.example.test/connect",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "https://team.example.test/connect"
+      },
+      {
+        "artifact_path": "/sms/cta_url",
+        "channel": "sms",
+        "claim_id": "claim_cta_sms_cta",
+        "claim_type": "url",
+        "fact_id": "fact_payroll_cta",
+        "normalized_value": "https://team.example.test/connect",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "https://team.example.test/connect"
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_cta_email_plain",
+        "claim_type": "url",
+        "fact_id": "fact_payroll_cta",
+        "normalized_value": "https://team.example.test/connect",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "https://team.example.test/connect"
+      },
+      {
+        "artifact_path": "/email/cta_url",
+        "channel": "email",
+        "claim_id": "claim_cta_email_cta",
+        "claim_type": "url",
+        "fact_id": "fact_payroll_cta",
+        "normalized_value": "https://team.example.test/connect",
+        "source_id": "source_payroll_card_v1",
+        "text_fragment": "https://team.example.test/connect"
+      }
+    ],
+    "deterministic_score": 100,
+    "findings": [],
+    "sms_metrics": {
+      "characters": 130,
+      "code_units": 130,
+      "encoding": "UCS-2",
+      "segments": 2,
+      "septets": null,
+      "units_per_segment": 67
+    },
+    "validation_blockers": [],
+    "validation_questions": [],
+    "validation_status": "READY"
+  },
+  "synthetic": true,
+  "title": "Matching case после approved concept rule"
+}

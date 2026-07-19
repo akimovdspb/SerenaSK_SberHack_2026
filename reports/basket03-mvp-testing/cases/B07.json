@@ -1,0 +1,231 @@
+{
+  "case_id": "B07",
+  "execution": {
+    "actual_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "actual_initial": "READY",
+    "actual_terminal": "APPROVABLE",
+    "expected_channels": {
+      "email": "GENERATED",
+      "sms": "GENERATED"
+    },
+    "expected_initial": "READY",
+    "expected_terminal": "APPROVABLE",
+    "package_version": 1,
+    "reason_code": null,
+    "run_status": "COMPLETED"
+  },
+  "failure": null,
+  "input": {
+    "brief": {
+      "channels": [
+        "sms",
+        "email"
+      ],
+      "cta_label": "Открыть сводку",
+      "cta_url": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+      "name": "Сводка событий",
+      "notes": "Использовать только точный allowlisted URL.",
+      "objective": "Показать безопасный synthetic CTA с фиксированными UTM",
+      "offer_period": null,
+      "product_id": "synthetic_pulse",
+      "segment_id": "segment_growth",
+      "synthetic": true,
+      "tone": "ясный деловой",
+      "trigger_id": "trigger_planning"
+    },
+    "expected": {
+      "blocker_codes": [],
+      "required_disclaimer_ids": [],
+      "selected_fact_ids": [
+        "fact_pulse_summary",
+        "fact_pulse_utm_cta"
+      ],
+      "status": "READY"
+    }
+  },
+  "metrics": {
+    "cache_write_tokens": 0,
+    "cached_tokens": 63964,
+    "completion_tokens": 11059,
+    "cost_usd": 0.05719387,
+    "full_worker_occupancy_ms": 271936,
+    "prompt_tokens": 81502,
+    "provider_calls": 5,
+    "total_tokens": 92561,
+    "usage_complete": true,
+    "user_visible_terminal_ms": 271929,
+    "workflow_elapsed_ms": 274884
+  },
+  "mode": "live_ouroboros",
+  "outputs": {
+    "channel_suppressions": [],
+    "email": {
+      "cta_label": "Открыть сводку",
+      "cta_url": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+      "disclaimer_ids": [],
+      "fact_refs": [
+        "fact_pulse_summary",
+        "fact_pulse_utm_cta"
+      ],
+      "headline": "Пульс 🚀",
+      "personalization_refs": [],
+      "plain_text": "Пульс 🚀. Инсайты собраны из синтетических событий. Открыть сводку: https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+      "preheader": "Синтетическая коммуникация без отправки.",
+      "sections": [
+        {
+          "body": "Инсайты собраны из синтетических событий.",
+          "fact_refs": [
+            "fact_pulse_summary"
+          ],
+          "heading": "",
+          "kind": "body",
+          "personalization_refs": [],
+          "section_id": "section_01"
+        }
+      ],
+      "subject": "Пульс 🚀"
+    },
+    "sms": {
+      "cta_url": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+      "fact_refs": [
+        "fact_pulse_summary",
+        "fact_pulse_utm_cta"
+      ],
+      "personalization_refs": [],
+      "text": "Пульс 🚀. Инсайты собраны из синтетических событий. Открыть сводку: https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"
+    },
+    "summary": "Синтетический пакет без отправки.",
+    "warnings": []
+  },
+  "passed": true,
+  "qa": {
+    "approvable": true,
+    "assertions": {
+      "allowed_url_only": true,
+      "grounded_package": true,
+      "utm_exact": true
+    },
+    "checked_fact_ids": [
+      "fact_pulse_summary",
+      "fact_pulse_utm_cta"
+    ],
+    "checked_ids": [
+      "QA01",
+      "QA02",
+      "QA03",
+      "QA04",
+      "QA05",
+      "QA06",
+      "QA07",
+      "QA08",
+      "QA09",
+      "QA10",
+      "QA11",
+      "QA12",
+      "QA13",
+      "QA14",
+      "QA15",
+      "QA16",
+      "QA17",
+      "QA18",
+      "QA19",
+      "QA20",
+      "QA21",
+      "QA22"
+    ],
+    "checked_policy_ids": [
+      "contact_standard_v1",
+      "legal_base_v1"
+    ],
+    "claim_evidence": [
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_summary_sms_001",
+        "claim_type": "text",
+        "fact_id": "fact_pulse_summary",
+        "normalized_value": "synthetic_event_summary",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "Инсайты собраны из синтетических событий."
+      },
+      {
+        "artifact_path": "/email/sections/0/body",
+        "channel": "email",
+        "claim_id": "claim_summary_email_body_001",
+        "claim_type": "text",
+        "fact_id": "fact_pulse_summary",
+        "normalized_value": "synthetic_event_summary",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "Инсайты собраны из синтетических событий."
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_summary_email_plain_001",
+        "claim_type": "text",
+        "fact_id": "fact_pulse_summary",
+        "normalized_value": "synthetic_event_summary",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "Инсайты собраны из синтетических событий."
+      },
+      {
+        "artifact_path": "/sms/text",
+        "channel": "sms",
+        "claim_id": "claim_url_sms_text_001",
+        "claim_type": "url",
+        "fact_id": "fact_pulse_utm_cta",
+        "normalized_value": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"
+      },
+      {
+        "artifact_path": "/sms/cta_url",
+        "channel": "sms",
+        "claim_id": "claim_url_sms_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_pulse_utm_cta",
+        "normalized_value": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"
+      },
+      {
+        "artifact_path": "/email/plain_text",
+        "channel": "email",
+        "claim_id": "claim_url_email_plain_001",
+        "claim_type": "url",
+        "fact_id": "fact_pulse_utm_cta",
+        "normalized_value": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"
+      },
+      {
+        "artifact_path": "/email/cta_url",
+        "channel": "email",
+        "claim_id": "claim_url_email_cta_001",
+        "claim_type": "url",
+        "fact_id": "fact_pulse_utm_cta",
+        "normalized_value": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07",
+        "source_id": "source_pulse_card_v1",
+        "text_fragment": "https://pulse.example.test/go?utm_source=cf&utm_medium=email&utm_campaign=b07"
+      }
+    ],
+    "deterministic_score": 100,
+    "findings": [],
+    "sms_metrics": {
+      "characters": 144,
+      "code_units": 145,
+      "encoding": "UCS-2",
+      "segments": 3,
+      "septets": null,
+      "units_per_segment": 67
+    },
+    "validation_blockers": [],
+    "validation_questions": [],
+    "validation_status": "READY"
+  },
+  "synthetic": true,
+  "title": "CTA использует только allowlisted HTTPS host и UTM"
+}

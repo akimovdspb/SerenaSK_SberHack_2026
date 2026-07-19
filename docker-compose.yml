@@ -1,0 +1,254 @@
+name: ${COMPOSE_PROJECT_NAME:-communication-factory}
+
+x-bounded-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-runtime-environment: &runtime-environment
+  OUROBOROS_APP_ROOT: /var/lib/ouroboros
+  OUROBOROS_REPO_DIR: /runtime-repo
+  OUROBOROS_DATA_DIR: /home/ouroboros/Ouroboros/data
+  OUROBOROS_SETTINGS_PATH: /home/ouroboros/Ouroboros/data/settings.json
+  OUROBOROS_PID_FILE: /home/ouroboros/Ouroboros/data/state/ouroboros.pid
+  OUROBOROS_PORT_FILE: /home/ouroboros/Ouroboros/data/state/server_port
+  OUROBOROS_SERVER_HOST: 0.0.0.0
+  OUROBOROS_SERVER_PORT: "8765"
+  OUROBOROS_TRUST_NONLOCAL_BIND_WITHOUT_PASSWORD: "1"
+  OUROBOROS_SKILLS_REPO_PATH: /skills
+  OUROBOROS_RUNTIME_MODE: light
+  OUROBOROS_CONTEXT_MODE: low
+  OUROBOROS_SAFETY_MODE: full
+  OUROBOROS_TASK_REVIEW_MODE: "off"
+  OUROBOROS_ACCEPTANCE_MAX_IMPROVEMENT_PASSES: "0"
+  OUROBOROS_POST_TASK_EVOLUTION: "false"
+  OUROBOROS_ALLOW_MUTATIVE_SUBAGENTS: "false"
+  CF_PROVIDER_PROFILE: ${EVAL_PROVIDER_PROFILE:-openai-gpt-5.4-mini}
+  CF_RUNTIME_PROVIDER: ${CF_RUNTIME_PROVIDER:-openai}
+  OPENROUTER_ENABLED: ${OPENROUTER_ENABLED:-false}
+  OUROBOROS_MODEL: ${OUROBOROS_MODEL:-openai::gpt-5.4-mini}
+  OUROBOROS_MODEL_HEAVY: ${OUROBOROS_MODEL:-openai::gpt-5.4-mini}
+  OUROBOROS_MODEL_LIGHT: ${OUROBOROS_MODEL:-openai::gpt-5.4-mini}
+  OUROBOROS_MODEL_FALLBACKS: ""
+  OUROBOROS_TOOL_TIMEOUT_SEC: "5"
+  OUROBOROS_SAFETY_CALL_TIMEOUT_SEC: "5"
+  OUROBOROS_FINALIZATION_GRACE_SEC: "2"
+  OUROBOROS_REVIEW_MAX_TOKENS: ${OUROBOROS_REVIEW_MAX_TOKENS:-65536}
+  OUROBOROS_GENERATIVE_PROBE: "0"
+  OUROBOROS_RETURN_REASONING: "false"
+  OUROBOROS_MAX_ROUNDS: "8"
+  TOTAL_BUDGET: ${TOTAL_BUDGET:-20}
+  OUROBOROS_PER_TASK_COST_USD: ${OUROBOROS_PER_TASK_COST_USD:-2}
+  MCP_SHARED_TOKEN: ${MCP_SHARED_TOKEN:?run make init}
+
+x-ouroboros-build: &ouroboros-build
+  context: .
+  dockerfile: ouroboros/Dockerfile
+  args:
+    OUROBOROS_VERSION: ${OUROBOROS_VERSION:-v6.61.4}
+    OUROBOROS_SHA: ${OUROBOROS_SHA:-a00d51dd414f794d830cacf7da760061e442fa88}
+
+services:
+  gateway:
+    image: communication-factory/gateway:local
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    restart: unless-stopped
+    cpus: "0.50"
+    mem_limit: 256m
+    pids_limit: 128
+    logging: *bounded-logging
+    environment:
+      APP_ACCESS_USERNAME: ${APP_ACCESS_USERNAME:?run make init}
+      APP_ACCESS_PASSWORD_HASH: ${APP_ACCESS_PASSWORD_HASH:?run make init}
+    ports:
+      - "${GATEWAY_HOST_BIND:-127.0.0.1}:${GATEWAY_HOST_PORT:-8080}:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - ingress
+      - edge
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+      - /data:size=16m,uid=10003,gid=10003,mode=0700
+      - /config:size=16m,uid=10003,gid=10003,mode=0700
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  app:
+    image: communication-factory/app:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    cpus: "1.00"
+    mem_limit: 768m
+    pids_limit: 256
+    logging: *bounded-logging
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DEFAULT_EXECUTION_MODE: ${DEFAULT_EXECUTION_MODE:-deterministic_template}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/factory.db}
+      ARTIFACTS_DIR: ${ARTIFACTS_DIR:-/data/artifacts}
+      EVIDENCE_DIR: /evidence
+      CONTRACT_LOCK_PATH: /contract-lock/communication_factory.lock.json
+      LIVE_PROVIDER_PROFILE: ${EVAL_PROVIDER_PROFILE:-openai-gpt-5.4-mini}
+      LIVE_TASK_TIMEOUT_SECONDS: ${LIVE_TASK_TIMEOUT_SECONDS:-25}
+      LIVE_RUN_TERMINAL_DEADLINE_SECONDS: ${LIVE_RUN_TERMINAL_DEADLINE_SECONDS:-29}
+      LIVE_USAGE_EXPECTED_PROVIDER: ${LIVE_USAGE_EXPECTED_PROVIDER:-openai}
+      LIVE_USAGE_REQUIRE_POST_TASK_SUMMARY: ${LIVE_USAGE_REQUIRE_POST_TASK_SUMMARY:-true}
+      CONTROLLED_PROVIDER_RETRY_ENABLED: ${CONTROLLED_PROVIDER_RETRY_ENABLED:-false}
+      CONTROLLED_PROVIDER_RETRY_FAULT_PROFILE: ${CONTROLLED_PROVIDER_RETRY_FAULT_PROFILE:-none}
+      CF_REQUEST_LEDGER_PATH: ${CF_REQUEST_LEDGER_CONTAINER_PATH:-}
+      CF_REQUEST_LEDGER_GOAL_ID: ${CF_REQUEST_LEDGER_GOAL_ID:-}
+      CF_REQUEST_LEDGER_EVALUATION_ID: ${CF_REQUEST_LEDGER_EVALUATION_ID:-}
+      MCP_SHARED_TOKEN: ${MCP_SHARED_TOKEN:?run make init}
+      MCP_MAX_PAYLOAD_BYTES: "65536"
+    expose:
+      - "8000"
+    group_add:
+      - "${LOCAL_GID:-1000}"
+    volumes:
+      - app_data:/data
+      - ./ouroboros/skills/communication_factory:/skills/communication_factory:ro
+      - ./runtime/contracts:/contract-lock:ro
+      - ./artifacts/evidence:/evidence:ro
+      - ${CF_REQUEST_LEDGER_HOST_DIR:-./runtime/request-ledger-disabled}:/accounting
+    networks:
+      - edge
+      - factory
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).read()"
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  ouroboros:
+    image: communication-factory/ouroboros:${OUROBOROS_VERSION:-v6.61.4}
+    build: *ouroboros-build
+    init: true
+    restart: unless-stopped
+    cpus: "2.50"
+    mem_limit: 4g
+    pids_limit: 512
+    logging: *bounded-logging
+    environment:
+      <<: *runtime-environment
+      OPENAI_API_KEY_FILE: ${PROVIDER_API_KEY_CONTAINER_PATH:-/run/secrets/openai_api_key}
+      OPENROUTER_API_KEY_FILE: ${PROVIDER_API_KEY_CONTAINER_PATH:-/run/secrets/openai_api_key}
+      CF_REQUEST_LEDGER_PATH: ${CF_REQUEST_LEDGER_CONTAINER_PATH:-}
+      CF_REQUEST_LEDGER_GOAL_ID: ${CF_REQUEST_LEDGER_GOAL_ID:-}
+      CF_REQUEST_LEDGER_EVALUATION_ID: ${CF_REQUEST_LEDGER_EVALUATION_ID:-}
+      CF_REQUEST_LEDGER_DEFAULT_CASE_ID: ${CF_REQUEST_LEDGER_DEFAULT_CASE_ID:-}
+      CF_REQUEST_LEDGER_DEFAULT_ATTEMPT_ID: ${CF_REQUEST_LEDGER_DEFAULT_ATTEMPT_ID:-}
+      CF_REQUEST_LEDGER_GID: ${LOCAL_GID:-1000}
+    expose:
+      - "8765"
+    volumes:
+      - type: bind
+        source: ${PROVIDER_API_KEY_HOST_PATH:-/home/dmitry/secrets/communication-factory/OPENAI_API_KEY.txt}
+        target: ${PROVIDER_API_KEY_CONTAINER_PATH:-/run/secrets/openai_api_key}
+        read_only: true
+        bind:
+          create_host_path: false
+      - ouroboros_data:/home/ouroboros/Ouroboros/data
+      - ./ouroboros/skills:/skills:ro
+      - ${CF_REQUEST_LEDGER_HOST_DIR:-./runtime/request-ledger-disabled}:/accounting
+    group_add:
+      - "${LOCAL_GID:-1000}"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - factory
+      - provider_egress
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8765/api/state', timeout=2)); assert d.get('supervisor_ready') and not d.get('supervisor_error') and int(d.get('workers_alive') or 0) > 0"
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /var/tmp:size=16m,mode=1777
+      - /runtime-repo:size=192m,uid=10001,gid=10001,mode=0700
+      - /home/ouroboros/.cache:size=64m,uid=10001,gid=10001,mode=0700
+    security_opt:
+      - no-new-privileges:true
+
+  contract-probe:
+    profiles:
+      - tools
+    image: communication-factory/ouroboros:${OUROBOROS_VERSION:-v6.61.4}
+    build: *ouroboros-build
+    restart: "no"
+    cpus: "1.00"
+    mem_limit: 1g
+    pids_limit: 256
+    logging: *bounded-logging
+    command:
+      - contract-probe
+    environment:
+      <<: *runtime-environment
+      CONTRACT_IMAGE_ID: ${CONTRACT_IMAGE_ID:-}
+      CONTRACT_LOCK_DIR: /contract-lock
+      CONTRACT_PROJECTION_PATH: /projection/communication_factory.ru.md
+      CONTRACT_PROBE_DRIVE: /probe-drive
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    volumes:
+      - ouroboros_data:/home/ouroboros/Ouroboros/data:ro
+      - ./ouroboros/skills:/skills:ro
+      - ./prompts/communication_factory.ru.md:/projection/communication_factory.ru.md:ro
+      - ./runtime/contracts:/contract-lock
+    depends_on:
+      app:
+        condition: service_healthy
+      ouroboros:
+        condition: service_healthy
+    networks:
+      - factory
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+      - /probe-drive:size=64m,uid=${LOCAL_UID:-1000},gid=${LOCAL_GID:-1000},mode=0700
+      - /runtime-repo:size=192m,uid=${LOCAL_UID:-1000},gid=${LOCAL_GID:-1000},mode=0700
+      - /home/ouroboros/.cache:size=32m,uid=${LOCAL_UID:-1000},gid=${LOCAL_GID:-1000},mode=0700
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  app_data:
+  ouroboros_data:
+
+networks:
+  ingress:
+  edge:
+    internal: true
+  factory:
+    internal: true
+  provider_egress:
