@@ -11,18 +11,21 @@
 ## Bootstrap и запуск
 
 ```bash
-make init    # локальная конфигурация: случайные внутренние credentials, ignored .env
-make setup   # локальные зависимости: uv sync --frozen && npm ci
-make up      # preflight → build/start gateway+app+ouroboros → fail-closed bootstrap
-make down    # остановить только сервисы этого проекта
+make init    # скрытый ввод OpenRouter-ключа + случайные локальные credentials
+make up      # build/start единого GLM-5.2 образа и ожидание готовности Ouroboros
+make down    # остановка только этого стека; named volume сохраняется
 ```
 
-`make up` завершается `make bootstrap`: настраивается pinned runtime и одноразовый
-`contract-probe` пишет атомарный runtime lock; без валидного lock генерация заблокирована.
-Провайдерский ключ оператор заранее кладёт в
-`/home/dmitry/secrets/communication-factory/OPENAI_API_KEY.txt` (mode `0600`, вне checkout);
-профиль лимитов — рядом в `operator-limits.yaml`. Пароль UI — в ignored
-`runtime/operator/access.txt`; не печатать и не копировать его.
+Для неинтерактивного запуска: `PROVIDER_KEY_FILE=/absolute/path/to/openrouter_key make init`.
+Файл должен находиться вне checkout, содержать одну непустую строку и иметь mode `0600`.
+Интерактивный ввод сохраняется в `${XDG_CONFIG_HOME:-~/.config}/communication-factory/`, а
+`.env.local` содержит только пути и несекретные параметры. Логин и пароль интерфейса находятся в
+ignored `runtime/operator/access.txt`. `make up` использует `compose.local.yml` и корневой
+Railway-образ: OpenRouter → `openrouter::z-ai/glm-5.2`, автоматический review skill, contract probe
+и admission выполняются до открытия `/healthz`. Ожидание ограничено 1200 секундами.
+
+Для разработки отдельно доступны `make setup` и внутренние цели `make engineering-init`,
+`make engineering-up`, `make engineering-down`; они не являются вторым пользовательским quickstart.
 
 ## Диагностика
 
@@ -59,8 +62,9 @@ make budget-status # honest budget: допущения владельца / ра
 
 ## Контролируемый retry задачи Ouroboros
 
-- Release-default: `CONTROLLED_PROVIDER_RETRY_ENABLED=false`. Максимум зашит в коде: один
-  логический run содержит одну обычную и не более одной повторной физической попытки.
+- Canonical engineering Compose-default: `CONTROLLED_PROVIDER_RETRY_ENABLED=false`. Portable
+  local-профиль (`make up`) и Railway single-image profile устанавливают `true`. Максимум зашит
+  в коде: один логический run содержит одну обычную и не более одной повторной физической попытки.
 - `CONTROLLED_PROVIDER_RETRY_FAULT_PROFILE` — только test-переключатель. Значения
   `transient_then_success` и `transient_twice` валидны лишь при `APP_ENV=test` и включённом
   retry; production/Compose default — `none`.
@@ -70,7 +74,7 @@ make budget-status # honest budget: допущения владельца / ра
 - Команда `make e2e-controlled-retry` не запускает Ouroboros и не использует provider-ключ: она
   поднимает два изолированных app/gateway-стека с детерминированным Task API double.
 
-Будущая release-операция допустима только после отдельного решения владельца:
+Для ручной квалификации canonical engineering Compose-профиля retry включается явно:
 
 ```bash
 CONTROLLED_PROVIDER_RETRY_ENABLED=true \
@@ -78,11 +82,12 @@ CONTROLLED_PROVIDER_RETRY_FAULT_PROFILE=none \
 docker compose up --detach --no-deps --force-recreate app
 ```
 
-До release/Railway enablement нужно заново проверить runtime lock и exact route/tools, выполнить
-`make verify-core`, providerless fault-матрицу, затем новый guarded live smoke, 2–3 pilots и
+Для новой формальной live-квалификации нужно проверить runtime lock и exact route/tools, выполнить
+`make verify-core`, providerless fault-матрицу, затем guarded live smoke, 2–3 pilots и
 последовательную live-корзину с уникальными ID, пустыми evidence-каталогами и положительными
 token/$ caps. Результаты требуется прочитать и заморозить как новую qualification; прежнее frozen
-evidence не подтверждает включённый retry. Prompt/schema/model/provider/P1 менять для этого нельзя.
+evidence само по себе не подтверждает новый operational-прогон. Prompt/schema/model/provider/P1
+менять для этого нельзя.
 
 ## Платные команды (каждая — за отдельным guard)
 
@@ -96,7 +101,7 @@ provider ledger: generation ID опрашивается не более 600 се
 | --- | --- |
 | `make live-probe` — транспортный probe двух инструментов | `ALLOW_LIVE_PROBE=true`, новый `EVALUATION_ID`, лимиты |
 | `make gate2-live-pilot` — один разрешённый профилем pilot | `ALLOW_GATE2_LIVE=true`, `PILOT_CASE_ID`, лимиты |
-| `make live-readiness` — связать warmup/smoke/пилоты в readiness-манифест | ID прогонов + отметка о фактическом просмотре результатов (сам provider не вызывает) |
+| `make live-readiness` — связать warmup/smoke/пилоты в readiness-манифест | ID прогонов + явное подтверждение просмотра выходов (сам provider не вызывает) |
 | `make eval-live` — полная последовательная корзина B01–B15 | `ALLOW_LIVE_EVAL=true`, новый `EVALUATION_ID`, `EVAL_PROVIDER_PROFILE`, `EVAL_MAX_TOKENS`, `EVAL_MAX_COST_USD`, `EVAL_CONCURRENCY=1`, пустой каталог назначения |
 | `make demo-canary` — один capped B04-канарейка перед демо | `ALLOW_DEMO_CANARY=true`, новый `DEMO_CANARY_ID` |
 | `make clean-clone-rehearsal` — README-репетиция на чистом checkout + один live B04 | `ALLOW_CLEAN_CLONE_LIVE=true`, новый `CLEAN_CLONE_EVALUATION_ID`, лимиты |

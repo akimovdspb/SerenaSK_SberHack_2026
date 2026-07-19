@@ -1,24 +1,37 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help init setup up down doctor backup backup-check backup-prune bootstrap skill-contract spec-drift architecture source-audit gate0-evidence verify-gate0 verify-gate1 verify-gate3 verify-gate4 budget-status test-budget live-probe-preflight live-probe gate2-live-preflight gate2-live-pilot live-readiness runtime-patch-assessment seed demo-reset demo-canary demo-check lint format-check typecheck test test-contract build smoke e2e e2e-controlled-retry test-chaos license security eval-replay eval-live-preflight eval-live evidence verify-core verify-implementation verify verify-submission clean-clone-rehearsal package-submission-dry-run package-submission
+LOCAL_COMPOSE := docker compose --env-file .env.local -f compose.local.yml
+
+.PHONY: help init setup up down engineering-init engineering-up engineering-down doctor backup backup-check backup-prune bootstrap skill-contract spec-drift architecture source-audit gate0-evidence verify-gate0 verify-gate1 verify-gate3 verify-gate4 budget-status test-budget live-probe-preflight live-probe gate2-live-preflight gate2-live-pilot live-readiness runtime-patch-assessment seed demo-reset demo-canary demo-check lint format-check typecheck test test-contract build smoke e2e e2e-controlled-retry test-chaos license security eval-replay eval-live-preflight eval-live evidence verify-core verify-implementation verify verify-submission clean-clone-rehearsal package-submission-dry-run package-submission
 
 help:
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-28s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-init: ## Create local non-provider configuration without copying provider keys
-	uv run python -m scripts.init_project
+init: ## Create portable local configuration and securely register one OpenRouter key
+	uv run python -m scripts.local_init
 
 setup: ## Install locked Python and Node dependencies
 	uv sync --frozen
 	npm ci
 
-up: ## Build and start the private Docker Compose stack
+up: ## Build and start the judge-ready local OpenRouter/GLM-5.2 stack
+	uv run python -m scripts.local_init --check
+	CF_BUILD_REVISION="$$(git rev-parse HEAD)" $(LOCAL_COMPOSE) up --build --detach factory
+	uv run python -m scripts.wait_local_ready
+
+down: ## Stop only the judge-ready local stack (persistent state is preserved)
+	$(LOCAL_COMPOSE) down
+
+engineering-init: ## Create the legacy deterministic verification environment
+	uv run python -m scripts.init_project
+
+engineering-up: ## Start the legacy multi-container verification stack
 	uv run python -m scripts.preflight up
 	docker compose up --build --detach gateway app ouroboros
 	$(MAKE) bootstrap
 
-down: ## Stop only this project's Compose services
+engineering-down: ## Stop the legacy multi-container verification stack
 	docker compose down
 
 doctor: ## Run read-only local/runtime diagnostics

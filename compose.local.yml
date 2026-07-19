@@ -1,0 +1,57 @@
+name: ${COMPOSE_PROJECT_NAME:-communication-factory-local}
+
+services:
+  factory:
+    image: communication-factory/local:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "on-failure:3"
+    environment:
+      APP_ACCESS_USERNAME: ${APP_ACCESS_USERNAME:?run make init}
+      APP_ACCESS_PASSWORD_FILE: /run/cf-inputs/app_access_password
+      OPENROUTER_API_KEY_FILE: /run/cf-inputs/openrouter_api_key
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      PORT: "8080"
+      CF_BUILD_REVISION: ${CF_BUILD_REVISION:-local-compose-v1}
+      TOTAL_BUDGET: ${TOTAL_BUDGET:-20}
+      OUROBOROS_PER_TASK_COST_USD: ${OUROBOROS_PER_TASK_COST_USD:-2}
+      AUTO_BOOTSTRAP_SKILL_REVIEW: "true"
+    ports:
+      - "127.0.0.1:${GATEWAY_HOST_PORT:-8080}:8080"
+    volumes:
+      - type: bind
+        source: ${APP_ACCESS_PASSWORD_HOST_PATH:?run make init}
+        target: /run/cf-inputs/app_access_password
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${OPENROUTER_API_KEY_HOST_PATH:?run make init}
+        target: /run/cf-inputs/openrouter_api_key
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: volume
+        source: state
+        target: /var/lib/communication-factory
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=5).read()"
+      interval: 10s
+      timeout: 6s
+      retries: 120
+      start_period: 10s
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  state:

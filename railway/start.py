@@ -46,6 +46,10 @@ SECRET_ENV_NAMES = {
     "AUTH_SESSION_SECRET",
     "MCP_SHARED_TOKEN",
 }
+SECRET_FILE_ENV_NAMES = {
+    "APP_ACCESS_PASSWORD_FILE",
+    "OPENROUTER_API_KEY_FILE",
+}
 SYSTEM_ENV_NAMES = (
     "PATH",
     "LANG",
@@ -124,6 +128,38 @@ def _write_secret(path: pathlib.Path, value: str) -> None:
         os.close(descriptor)
 
 
+def _read_secret_input(
+    environment: dict[str, str],
+    *,
+    value_name: str,
+    file_name: str,
+    label: str,
+) -> str:
+    value = str(environment.pop(value_name, ""))
+    file_value = str(environment.pop(file_name, "")).strip()
+    if value and file_value:
+        raise RailwayStartupError(f"{label} must use either a value or a file, not both")
+    if file_value:
+        path = pathlib.Path(file_value)
+        if not path.is_absolute() or path.is_symlink() or not path.is_file():
+            raise RailwayStartupError(f"{label} file is unavailable")
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise RailwayStartupError(f"{label} file is unreadable") from exc
+        lines = raw.splitlines()
+        if len(lines) != 1 or not lines[0] or lines[0] != lines[0].strip():
+            raise RailwayStartupError(f"{label} file must contain one trimmed line")
+        try:
+            value = lines[0].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise RailwayStartupError(f"{label} file is not UTF-8") from exc
+        raw = b""
+    if not value or value != value.strip() or "\n" in value or "\r" in value:
+        raise RailwayStartupError(f"{label} has an invalid shape")
+    return value
+
+
 def _password_verifier(password: str) -> tuple[str, str]:
     salt = secrets.token_bytes(16)
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 310_000)
@@ -173,21 +209,31 @@ def build_launch_plan(source: dict[str, str] | None = None) -> LaunchPlan:
     username = _required(environment, "APP_ACCESS_USERNAME")
     if not re.fullmatch(r"[A-Za-z0-9_.@-]{1,64}", username):
         raise RailwayStartupError("APP_ACCESS_USERNAME contains unsupported characters")
-    password = str(environment.pop("APP_ACCESS_PASSWORD", ""))
+    password = _read_secret_input(
+        environment,
+        value_name="APP_ACCESS_PASSWORD",
+        file_name="APP_ACCESS_PASSWORD_FILE",
+        label="application access password",
+    )
     environment.pop("APP_ACCESS_PASSWORD_HASH", None)
-    if not password:
-        raise RailwayStartupError("required Railway variable APP_ACCESS_PASSWORD is missing")
     password_salt, password_digest = _password_verifier(password)
     password = ""
 
-    provider_key = str(environment.pop("OPENROUTER_API_KEY", ""))
-    if not provider_key or provider_key != provider_key.strip() or "\n" in provider_key:
-        raise RailwayStartupError("OPENROUTER_API_KEY has an invalid shape")
-    for name in SECRET_ENV_NAMES:
+    provider_key = _read_secret_input(
+        environment,
+        value_name="OPENROUTER_API_KEY",
+        file_name="OPENROUTER_API_KEY_FILE",
+        label="OpenRouter API key",
+    )
+    for name in SECRET_ENV_NAMES | SECRET_FILE_ENV_NAMES:
         environment.pop(name, None)
     secret_path = pathlib.Path("/run/cf-secrets/openrouter_api_key")
     _write_secret(secret_path, provider_key)
     provider_key = ""
+
+    cookie_secure = str(environment.get("AUTH_COOKIE_SECURE") or "true").strip().lower()
+    if cookie_secure not in {"true", "false"}:
+        raise RailwayStartupError("AUTH_COOKIE_SECURE must be true or false")
 
     total_budget = _positive_float(environment, "TOTAL_BUDGET", "20")
     per_task_budget = _positive_float(environment, "OUROBOROS_PER_TASK_COST_USD", "2")
@@ -304,7 +350,7 @@ def build_launch_plan(source: dict[str, str] | None = None) -> LaunchPlan:
         "AUTH_PASSWORD_SALT": password_salt,
         "AUTH_PASSWORD_DIGEST": password_digest,
         "AUTH_SESSION_SECRET": base64.urlsafe_b64encode(secrets.token_bytes(48)).decode("ascii"),
-        "AUTH_COOKIE_SECURE": "true",
+        "AUTH_COOKIE_SECURE": cookie_secure,
     }
     gateway_env = {
         "PATH": system.get("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"),
@@ -324,7 +370,7 @@ def build_launch_plan(source: dict[str, str] | None = None) -> LaunchPlan:
 
 
 def scrub_parent_environment() -> None:
-    for name in SECRET_ENV_NAMES:
+    for name in SECRET_ENV_NAMES | SECRET_FILE_ENV_NAMES:
         os.environ.pop(name, None)
 
 
@@ -356,7 +402,7 @@ def validate_secret_isolation(plan: LaunchPlan) -> None:
         raise RailwayStartupError("runtime received a plaintext provider or UI secret")
     if not plan.runtime_env.get("OPENROUTER_API_KEY_FILE"):
         raise RailwayStartupError("runtime provider secret path is missing")
-    if SECRET_ENV_NAMES & os.environ.keys():
+    if (SECRET_ENV_NAMES | SECRET_FILE_ENV_NAMES) & os.environ.keys():
         raise RailwayStartupError("container supervisor environment was not scrubbed")
 
 

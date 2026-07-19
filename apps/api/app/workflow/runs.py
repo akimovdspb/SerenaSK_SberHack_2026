@@ -48,6 +48,14 @@ TERMINAL_TASK_STATUSES = {"completed", "failed", "cancelled", "rejected_duplicat
 MAX_CONTROLLED_PROVIDER_RETRIES = 1
 DEFAULT_RETRY_BACKOFF_SECONDS = 0.25
 MAX_RETRY_AFTER_SECONDS = 2.0
+DEFAULT_RETRY_ADMISSION_SETTLE_SECONDS = 2.0
+TRANSIENT_RETRY_ADMISSION_ERRORS = frozenset(
+    {
+        "private Ouroboros readiness request failed",
+        "private Ouroboros readiness response is invalid",
+        "runtime readiness or mode profile drifted",
+    }
+)
 
 
 class ManagedTaskAdapter(Protocol):
@@ -89,6 +97,7 @@ class RunCoordinator:
         provider_profile: str = "openai-gpt-5.4-mini",
         retry_backoff_seconds: float = DEFAULT_RETRY_BACKOFF_SECONDS,
         retry_after_cap_seconds: float = MAX_RETRY_AFTER_SECONDS,
+        retry_admission_settle_seconds: float = DEFAULT_RETRY_ADMISSION_SETTLE_SECONDS,
         before_task_submit: (
             Callable[[RunView, RunAttemptView, dict[str, Any]], None] | None
         ) = None,
@@ -99,6 +108,8 @@ class RunCoordinator:
             raise ValueError("controlled retry backoff cannot be negative")
         if retry_after_cap_seconds <= 0:
             raise ValueError("controlled Retry-After cap must be positive")
+        if retry_admission_settle_seconds < 0:
+            raise ValueError("controlled retry admission settle cannot be negative")
         self._store = store
         self._mcp = mcp_service
         self._adapter = adapter
@@ -113,6 +124,7 @@ class RunCoordinator:
         self._provider_profile = provider_profile
         self._retry_backoff_seconds = retry_backoff_seconds
         self._retry_after_cap_seconds = retry_after_cap_seconds
+        self._retry_admission_settle_seconds = retry_admission_settle_seconds
         self._before_task_submit = before_task_submit
         self._monotonic = monotonic
         self._sleep = sleeper
@@ -376,7 +388,7 @@ class RunCoordinator:
             return
         try:
             self._ensure_mcp_authorization(run, attempt)
-            effective_admission = admission or self._adapter.admit()
+            effective_admission = admission or self._admit_attempt(run, attempt)
             self._assert_attempt_identity(run, attempt, effective_admission)
             payload = self._build_attempt_payload(run, attempt, effective_admission)
             if campaign_request_digest(payload) != attempt.request_digest:
@@ -403,6 +415,29 @@ class RunCoordinator:
             self._monitor_inner(run.run_id, attempt.attempt_id)
         else:
             self._submit_monitor(run.run_id, attempt.attempt_id)
+
+    def _admit_attempt(self, run: RunView, attempt: RunAttemptView) -> TaskAdmission:
+        try:
+            return self._adapter.admit()
+        except TaskAdmissionError as exc:
+            transient_retry_admission = (
+                self._controlled_retry_enabled
+                and attempt.attempt_number == 2
+                and str(exc) in TRANSIENT_RETRY_ADMISSION_ERRORS
+            )
+            if not transient_retry_admission:
+                raise
+            self._store.append_run_event(
+                run.run_id,
+                event_key="run.retry_admission_settle",
+                event_type="run.stage",
+                data={
+                    "stage": "retry_admission_settle",
+                    "seconds": self._retry_admission_settle_seconds,
+                },
+            )
+            self._sleep(self._retry_admission_settle_seconds)
+            return self._adapter.admit()
 
     def _resolve_absent_submission_after_restart(
         self,

@@ -44,8 +44,10 @@ def initialize(root: pathlib.Path = ROOT) -> tuple[pathlib.Path, bool]:
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
 
     source = env_example.read_text(encoding="utf-8")
-    source = _replace_value(source, "LOCAL_UID", str(os.getuid()))
-    source = _replace_value(source, "LOCAL_GID", str(os.getgid()))
+    local_uid = getattr(os, "getuid", lambda: 1000)()
+    local_gid = getattr(os, "getgid", lambda: 1000)()
+    source = _replace_value(source, "LOCAL_UID", str(local_uid))
+    source = _replace_value(source, "LOCAL_GID", str(local_gid))
     source = _replace_value(source, "APP_ACCESS_USERNAME", username)
     source = _replace_value(source, "APP_ACCESS_PASSWORD_HASH", password_hash, quoted=True)
     source = _replace_value(source, "MCP_SHARED_TOKEN", mcp_token)

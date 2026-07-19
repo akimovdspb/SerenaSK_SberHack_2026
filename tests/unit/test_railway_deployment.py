@@ -84,11 +84,58 @@ def test_launch_plan_keeps_provider_and_password_out_of_app_and_gateway(
     start.validate_secret_isolation(plan)
 
 
+def test_launch_plan_accepts_mounted_secret_files_for_local_http(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    password_file = tmp_path / "password.txt"
+    provider_file = tmp_path / "openrouter.txt"
+    password_file.write_text("synthetic-local-password\n", encoding="utf-8")
+    provider_file.write_text("synthetic-local-provider-key\n", encoding="utf-8")
+    environment = _environment(tmp_path)
+    environment.pop("APP_ACCESS_PASSWORD")
+    environment.pop("OPENROUTER_API_KEY")
+    environment.update(
+        {
+            "APP_ACCESS_PASSWORD_FILE": str(password_file.resolve()),
+            "OPENROUTER_API_KEY_FILE": str(provider_file.resolve()),
+            "AUTH_COOKIE_SECURE": "false",
+        }
+    )
+    written: dict[str, str] = {}
+    monkeypatch.setattr(start, "_prepare_directories", lambda _: None)
+    monkeypatch.setattr(
+        start,
+        "_write_secret",
+        lambda path, value: written.update(path=str(path), value=value),
+    )
+    monkeypatch.setattr(start, "_password_verifier", lambda _: ("salt", "digest"))
+
+    plan = start.build_launch_plan(environment)
+
+    assert plan.auth_env["AUTH_COOKIE_SECURE"] == "false"
+    assert written["value"] == "synthetic-local-provider-key"
+    assert "APP_ACCESS_PASSWORD_FILE" not in plan.app_env
+    assert "OPENROUTER_API_KEY_FILE" not in plan.gateway_env
+
+
+def test_launch_plan_rejects_value_and_file_for_the_same_secret(
+    tmp_path: pathlib.Path,
+) -> None:
+    password_file = tmp_path / "password.txt"
+    password_file.write_text("synthetic-local-password\n", encoding="utf-8")
+    environment = _environment(tmp_path)
+    environment["APP_ACCESS_PASSWORD_FILE"] = str(password_file.resolve())
+
+    with pytest.raises(start.RailwayStartupError, match="either a value or a file"):
+        start.build_launch_plan(environment)
+
+
 def test_launch_plan_requires_a_password(tmp_path: pathlib.Path) -> None:
     environment = _environment(tmp_path)
     environment.pop("APP_ACCESS_PASSWORD")
 
-    with pytest.raises(start.RailwayStartupError, match="APP_ACCESS_PASSWORD"):
+    with pytest.raises(start.RailwayStartupError, match="application access password"):
         start.build_launch_plan(environment)
 
 
@@ -108,12 +155,16 @@ def test_parent_environment_is_scrubbed_after_child_environments_are_built(
     monkeypatch.setenv("APP_ACCESS_PASSWORD", "synthetic-test-password")
     monkeypatch.setenv("OPENROUTER_API_KEY", "synthetic-test-provider-value")
     monkeypatch.setenv("MCP_SHARED_TOKEN", "synthetic-test-mcp-token")
+    monkeypatch.setenv("APP_ACCESS_PASSWORD_FILE", "/synthetic/password")
+    monkeypatch.setenv("OPENROUTER_API_KEY_FILE", "/synthetic/provider")
 
     start.scrub_parent_environment()
 
     assert "APP_ACCESS_PASSWORD" not in start.os.environ
     assert "OPENROUTER_API_KEY" not in start.os.environ
     assert "MCP_SHARED_TOKEN" not in start.os.environ
+    assert "APP_ACCESS_PASSWORD_FILE" not in start.os.environ
+    assert "OPENROUTER_API_KEY_FILE" not in start.os.environ
 
 
 def test_railway_profile_is_one_service_with_public_health_and_private_core() -> None:

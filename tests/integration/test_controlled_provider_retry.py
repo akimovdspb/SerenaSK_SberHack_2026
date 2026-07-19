@@ -27,6 +27,7 @@ from apps.api.app.mcp.service import FactoryMcpService
 from apps.api.app.ouroboros_client import (
     ManagedTaskTransportError,
     TaskAdmission,
+    TaskAdmissionError,
     TaskTransportFailure,
     build_campaign_task,
 )
@@ -48,6 +49,7 @@ class ScriptedTaskAdapter:
         self._queued: set[str] = set()
         self._step_by_task: dict[str, str] = {}
         self.admission_drift: str | None = None
+        self.transient_admission_failures = 0
 
     def admit(self) -> TaskAdmission:
         admission = TaskAdmission(
@@ -60,6 +62,9 @@ class ScriptedTaskAdapter:
             runtime_image_id=f"sha256:{'d' * 64}",
         )
         if not self.payloads or self.admission_drift is None:
+            if self.payloads and self.transient_admission_failures > 0:
+                self.transient_admission_failures -= 1
+                raise TaskAdmissionError("runtime readiness or mode profile drifted")
             return admission
         if self.admission_drift == "prompt_hash":
             return replace(admission, prompt_hash="e" * 64)
@@ -322,13 +327,51 @@ def test_terminal_deadline_release_then_success_retries_once(tmp_path: pathlib.P
     _, _, adapter, completed = _run(
         tmp_path,
         ["hold", "success"],
-        terminal_deadline_seconds=0.03,
+        terminal_deadline_seconds=0.1,
     )
 
     assert completed.status is RunStatus.COMPLETED
     assert len(adapter.payloads) == completed.physical_attempt_count == 2
     assert completed.attempts[0].reason_code == "TERMINAL_DEADLINE"
     assert completed.attempts[0].released_at is not None
+
+
+def test_second_attempt_waits_once_for_runtime_admission_to_settle(
+    tmp_path: pathlib.Path,
+) -> None:
+    sleeps: list[float] = []
+
+    def sleeper(seconds: float) -> None:
+        sleeps.append(seconds)
+        time.sleep(0)
+
+    store, mcp, adapter, campaign_id = _services(tmp_path, ["http_503", "success"])
+    adapter.transient_admission_failures = 1
+    coordinator = RunCoordinator(
+        store=store,
+        mcp_service=mcp,
+        adapter=adapter,
+        controlled_provider_retry_enabled=True,
+        terminal_deadline_seconds=0.2,
+        poll_interval_seconds=0.005,
+        retry_backoff_seconds=0,
+        retry_admission_settle_seconds=2.0,
+        sleeper=sleeper,
+    )
+    try:
+        accepted = coordinator.start_live(campaign_id)
+        completed = coordinator.wait(accepted.run_id, timeout=2)
+    finally:
+        coordinator.shutdown()
+
+    assert completed.status is RunStatus.COMPLETED
+    assert completed.physical_attempt_count == len(adapter.payloads) == 2
+    assert 2.0 in sleeps
+    assert any(
+        event.event_type == "run.stage"
+        and event.data.get("stage") == "retry_admission_settle"
+        for event in store.run_events(completed.run_id)
+    )
 
 
 def test_normalized_provider_unavailable_reason_then_success_retries_once(
