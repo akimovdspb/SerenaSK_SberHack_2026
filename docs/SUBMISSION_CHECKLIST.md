@@ -5,8 +5,8 @@
 - [x] Отчёт MVP и обезличенный Basket-03 с десятью успешными живыми кейсами.
 - [x] Синтетические данные, внешняя отправка отключена, секреты отсутствуют в репозитории.
 - [x] Добавить публичную ссылку на озвученное демо-видео длительностью `<180` секунд:
-  [Яндекс Диск](https://disk.yandex.ru/i/0JD3ywQ_Eo73yw) ·
-  [Google Диск — запасная ссылка](https://drive.google.com/file/d/19dCKGGawWxrkVWMutZFiEdBAAaQu_pJQ/view?usp=sharing).
+  [Яндекс Диск — MP4](https://disk.yandex.ru/i/PiKV2pLeqjPqJQ) ·
+  [Google Диск — запасная ссылка](https://drive.google.com/file/d/1OOV1NQ3ZYUUdqHO4xfbsChhrK5RSk0E6/view?usp=sharing).
 - [ ] Проверить код, презентацию и видео из приватного окна и передать ссылки организаторам.
 
 Ссылки на видео добавлены в `README.md` и `docs/JURY_GUIDE.md`; код и сохранённые результаты
